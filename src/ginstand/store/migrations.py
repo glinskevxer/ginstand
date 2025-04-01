@@ -78,6 +78,52 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE INDEX field_by_farm ON field(farm)",
         ),
     ),
+    Migration(
+        version=2,
+        name="the module yard and the gin run",
+        statements=(
+            """
+            CREATE TABLE module (
+                tag           TEXT PRIMARY KEY,
+                field         TEXT NOT NULL REFERENCES field(ref),
+                kind          TEXT NOT NULL,
+                harvested     TEXT NOT NULL,
+                received      TEXT NOT NULL,
+                gross_pounds  INTEGER NOT NULL,
+                tare_pounds   INTEGER NOT NULL,
+                moisture_pct  TEXT NOT NULL,
+                wrap          TEXT NOT NULL DEFAULT 'none',
+                variety       TEXT NOT NULL DEFAULT '',
+                note          TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX module_by_field ON module(field)",
+            "CREATE INDEX module_by_received ON module(received)",
+            """
+            CREATE TABLE gin_run (
+                ref        TEXT PRIMARY KEY,
+                crop_year  INTEGER NOT NULL,
+                gin_code   TEXT NOT NULL,
+                opened     TEXT NOT NULL,
+                closed     TEXT,
+                shift      TEXT NOT NULL DEFAULT '',
+                note       TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX gin_run_by_crop_year ON gin_run(crop_year)",
+            """
+            CREATE TABLE run_module (
+                run      TEXT NOT NULL REFERENCES gin_run(ref),
+                module   TEXT NOT NULL REFERENCES module(tag),
+                position INTEGER NOT NULL,
+                fed_on   TEXT NOT NULL,
+                PRIMARY KEY (run, module)
+            )
+            """,
+            "CREATE UNIQUE INDEX run_module_position ON run_module(run, position)",
+            "CREATE UNIQUE INDEX run_module_once ON run_module(module)",
+        ),
+    ),
 )
 
 
