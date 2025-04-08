@@ -124,6 +124,42 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE UNIQUE INDEX run_module_once ON run_module(module)",
         ),
     ),
+    Migration(
+        version=3,
+        name="bales and the classing cards against them",
+        statements=(
+            """
+            CREATE TABLE bale (
+                tag          TEXT PRIMARY KEY,
+                run          TEXT NOT NULL REFERENCES gin_run(ref),
+                pressed      TEXT NOT NULL,
+                gross_pounds INTEGER NOT NULL,
+                tare_pounds  INTEGER NOT NULL,
+                moisture_pct TEXT NOT NULL,
+                stand        TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX bale_by_run ON bale(run)",
+            "CREATE INDEX bale_by_pressed ON bale(pressed)",
+            """
+            CREATE TABLE classing (
+                tag        TEXT PRIMARY KEY REFERENCES bale(tag),
+                classed    TEXT NOT NULL,
+                color      INTEGER NOT NULL,
+                leaf       INTEGER NOT NULL,
+                staple     INTEGER NOT NULL,
+                micronaire TEXT NOT NULL,
+                strength   TEXT NOT NULL,
+                uniformity TEXT NOT NULL,
+                trash_pct  TEXT NOT NULL,
+                extraneous TEXT NOT NULL DEFAULT '',
+                office     TEXT NOT NULL DEFAULT '',
+                remarks    TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX classing_by_classed ON classing(classed)",
+        ),
+    ),
 )
 
 
