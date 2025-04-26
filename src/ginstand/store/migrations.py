@@ -160,6 +160,26 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE INDEX classing_by_classed ON classing(classed)",
         ),
     ),
+    Migration(
+        version=4,
+        name="yard holds",
+        statements=(
+            """
+            CREATE TABLE yard_hold (
+                id        INTEGER PRIMARY KEY AUTOINCREMENT,
+                module    TEXT NOT NULL REFERENCES module(tag),
+                reason    TEXT NOT NULL,
+                placed    TEXT NOT NULL,
+                placed_by TEXT NOT NULL DEFAULT '',
+                lifted    TEXT,
+                lifted_by TEXT NOT NULL DEFAULT '',
+                note      TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX yard_hold_by_module ON yard_hold(module)",
+            "CREATE UNIQUE INDEX yard_hold_one_active ON yard_hold(module) WHERE lifted IS NULL",
+        ),
+    ),
 )
 
 
