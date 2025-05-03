@@ -20,6 +20,7 @@ from ginstand.errors import StateError
 from ginstand.store.bales import BaleStore
 from ginstand.store.cards import CardStore
 from ginstand.store.growers import LeaseStore, ProducerStore
+from ginstand.store.holds import HoldStore
 from ginstand.store.land import FarmStore, FieldStore
 from ginstand.store.migrations import apply_pending, check_current, current_version
 from ginstand.store.modules import ModuleStore
@@ -40,6 +41,7 @@ class Book:
         self.runs = RunStore(connection)
         self.bales = BaleStore(connection)
         self.cards = CardStore(connection)
+        self.holds = HoldStore(connection)
 
     @classmethod
     def create(cls, path: str | Path, on: date) -> Book:
