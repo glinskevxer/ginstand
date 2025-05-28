@@ -180,6 +180,30 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE UNIQUE INDEX yard_hold_one_active ON yard_hold(module) WHERE lifted IS NULL",
         ),
     ),
+    Migration(
+        version=5,
+        name="bale allocation and the carry it leaves",
+        statements=(
+            """
+            CREATE TABLE bale_allocation (
+                tag       TEXT PRIMARY KEY REFERENCES bale(tag),
+                producer  TEXT NOT NULL REFERENCES producer(ref),
+                run       TEXT NOT NULL REFERENCES gin_run(ref),
+                allocated TEXT NOT NULL
+            )
+            """,
+            "CREATE INDEX bale_allocation_by_producer ON bale_allocation(producer)",
+            "CREATE INDEX bale_allocation_by_run ON bale_allocation(run)",
+            """
+            CREATE TABLE allocation_carry (
+                producer  TEXT NOT NULL REFERENCES producer(ref),
+                crop_year INTEGER NOT NULL,
+                carry     TEXT NOT NULL,
+                PRIMARY KEY (producer, crop_year)
+            )
+            """,
+        ),
+    ),
 )
 
 

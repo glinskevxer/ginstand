@@ -17,6 +17,7 @@ from pathlib import Path
 from types import TracebackType
 
 from ginstand.errors import StateError
+from ginstand.store.allocations import AllocationStore
 from ginstand.store.bales import BaleStore
 from ginstand.store.cards import CardStore
 from ginstand.store.growers import LeaseStore, ProducerStore
@@ -42,6 +43,7 @@ class Book:
         self.bales = BaleStore(connection)
         self.cards = CardStore(connection)
         self.holds = HoldStore(connection)
+        self.allocations = AllocationStore(connection)
 
     @classmethod
     def create(cls, path: str | Path, on: date) -> Book:
