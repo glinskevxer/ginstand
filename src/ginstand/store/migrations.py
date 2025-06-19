@@ -204,6 +204,24 @@ MIGRATIONS: tuple[Migration, ...] = (
             """,
         ),
     ),
+    Migration(
+        version=6,
+        name="cottonseed loads off a run",
+        statements=(
+            """
+            CREATE TABLE seed_load (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                run        TEXT NOT NULL REFERENCES gin_run(ref),
+                weighed    TEXT NOT NULL,
+                net_pounds INTEGER NOT NULL,
+                ticket     TEXT NOT NULL DEFAULT '',
+                buyer      TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX seed_load_by_run ON seed_load(run)",
+            "CREATE UNIQUE INDEX seed_load_by_ticket ON seed_load(ticket) WHERE ticket <> ''",
+        ),
+    ),
 )
 
 
