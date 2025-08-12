@@ -15,14 +15,19 @@ from datetime import date
 from ginstand.errors import DuplicateError, NotFoundError
 from ginstand.ids import reference
 from ginstand.model.ginrun import GinRun
+from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_date, as_optional_date
 
 
-class RunStore:
+class RunStore(Repository[GinRun]):
     """The gin runs, and the modules fed into each one."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self._connection = connection
+    table = "gin_run"
+    kind = "gin run"
+    order_by = "opened, ref"
+
+    def _from_row(self, row: sqlite3.Row) -> GinRun:
+        return _run_from(row)
 
     def add(self, run: GinRun) -> None:
         """Open a run in the book. Raises if the reference is taken."""
@@ -60,41 +65,13 @@ class RunStore:
             ),
         )
 
-    def find(self, ref: str) -> GinRun | None:
-        """The run, or None."""
-        key = reference(ref, "gin run")
-        row = self._connection.execute("SELECT * FROM gin_run WHERE ref = ?", (key,)).fetchone()
-        return None if row is None else _run_from(row)
-
-    def get(self, ref: str) -> GinRun:
-        """The run. Raises if the book does not have it."""
-        found = self.find(ref)
-        if found is None:
-            raise NotFoundError("gin run", reference(ref, "gin run"))
-        return found
-
-    def exists(self, ref: str) -> bool:
-        """Whether the book has a run under this reference."""
-        return self.find(ref) is not None
-
-    def list_all(self) -> tuple[GinRun, ...]:
-        """Every run, oldest opened first."""
-        rows = self._connection.execute("SELECT * FROM gin_run ORDER BY opened, ref").fetchall()
-        return tuple(_run_from(row) for row in rows)
-
     def for_crop_year(self, crop_year: int) -> tuple[GinRun, ...]:
         """Every run in one crop year."""
-        rows = self._connection.execute(
-            "SELECT * FROM gin_run WHERE crop_year = ? ORDER BY opened, ref", (crop_year,)
-        ).fetchall()
-        return tuple(_run_from(row) for row in rows)
+        return self._select("crop_year = ?", (crop_year,))
 
     def open_runs(self) -> tuple[GinRun, ...]:
         """Every run that has not been closed."""
-        rows = self._connection.execute(
-            "SELECT * FROM gin_run WHERE closed IS NULL ORDER BY opened, ref"
-        ).fetchall()
-        return tuple(_run_from(row) for row in rows)
+        return self._select("closed IS NULL", ())
 
     def next_position(self, run: str) -> int:
         """The position the next module fed into this run will take."""

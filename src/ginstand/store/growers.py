@@ -16,14 +16,18 @@ from decimal import Decimal
 from ginstand.errors import DuplicateError, NotFoundError
 from ginstand.ids import reference
 from ginstand.model.producer import Lease, LeaseKind, Producer
+from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_decimal
 
 
-class ProducerStore:
+class ProducerStore(Repository[Producer]):
     """The producer register."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self._connection = connection
+    table = "producer"
+    kind = "producer"
+
+    def _from_row(self, row: sqlite3.Row) -> Producer:
+        return _producer_from(row)
 
     def add(self, producer: Producer) -> None:
         """Put a producer in the book. Raises if the reference is taken."""
@@ -43,34 +47,15 @@ class ProducerStore:
             (producer.name, producer.address, producer.phone, producer.ccc_number, producer.ref),
         )
 
-    def find(self, ref: str) -> Producer | None:
-        """The producer, or None if the book does not have them."""
-        key = reference(ref, "producer")
-        row = self._connection.execute("SELECT * FROM producer WHERE ref = ?", (key,)).fetchone()
-        return None if row is None else _producer_from(row)
 
-    def get(self, ref: str) -> Producer:
-        """The producer. Raises if the book does not have them."""
-        found = self.find(ref)
-        if found is None:
-            raise NotFoundError("producer", reference(ref, "producer"))
-        return found
-
-    def exists(self, ref: str) -> bool:
-        """Whether the book has a producer under this reference."""
-        return self.find(ref) is not None
-
-    def list_all(self) -> tuple[Producer, ...]:
-        """Every producer, in reference order."""
-        rows = self._connection.execute("SELECT * FROM producer ORDER BY ref").fetchall()
-        return tuple(_producer_from(row) for row in rows)
-
-
-class LeaseStore:
+class LeaseStore(Repository[Lease]):
     """The lease register."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self._connection = connection
+    table = "lease"
+    kind = "lease"
+
+    def _from_row(self, row: sqlite3.Row) -> Lease:
+        return _lease_from(row)
 
     def add(self, lease: Lease) -> None:
         """Put a lease in the book. Raises if the reference is taken."""
@@ -91,35 +76,9 @@ class LeaseStore:
             (lease.tenant, str(lease.kind), lease.landlord, str(lease.landlord_share), lease.ref),
         )
 
-    def find(self, ref: str) -> Lease | None:
-        """The lease, or None."""
-        key = reference(ref, "lease")
-        row = self._connection.execute("SELECT * FROM lease WHERE ref = ?", (key,)).fetchone()
-        return None if row is None else _lease_from(row)
-
-    def get(self, ref: str) -> Lease:
-        """The lease. Raises if the book does not have it."""
-        found = self.find(ref)
-        if found is None:
-            raise NotFoundError("lease", reference(ref, "lease"))
-        return found
-
-    def exists(self, ref: str) -> bool:
-        """Whether the book has a lease under this reference."""
-        return self.find(ref) is not None
-
-    def list_all(self) -> tuple[Lease, ...]:
-        """Every lease, in reference order."""
-        rows = self._connection.execute("SELECT * FROM lease ORDER BY ref").fetchall()
-        return tuple(_lease_from(row) for row in rows)
-
     def for_tenant(self, tenant: str) -> tuple[Lease, ...]:
         """Every lease a producer farms under."""
-        key = reference(tenant, "tenant")
-        rows = self._connection.execute(
-            "SELECT * FROM lease WHERE tenant = ? ORDER BY ref", (key,)
-        ).fetchall()
-        return tuple(_lease_from(row) for row in rows)
+        return self._select("tenant = ?", (reference(tenant, "tenant"),))
 
 
 def _producer_from(row: sqlite3.Row) -> Producer:

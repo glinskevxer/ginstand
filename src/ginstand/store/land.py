@@ -13,14 +13,18 @@ import sqlite3
 from ginstand.errors import DuplicateError, NotFoundError
 from ginstand.ids import reference
 from ginstand.model.farm import Farm, Field
+from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_decimal
 
 
-class FarmStore:
+class FarmStore(Repository[Farm]):
     """The farm register."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self._connection = connection
+    table = "farm"
+    kind = "farm"
+
+    def _from_row(self, row: sqlite3.Row) -> Farm:
+        return _farm_from(row)
 
     def add(self, farm: Farm) -> None:
         """Put a farm in the book. Raises if the reference is taken."""
@@ -40,42 +44,19 @@ class FarmStore:
             (farm.producer, farm.name, farm.fsa_number, farm.county, farm.ref),
         )
 
-    def find(self, ref: str) -> Farm | None:
-        """The farm, or None."""
-        key = reference(ref, "farm")
-        row = self._connection.execute("SELECT * FROM farm WHERE ref = ?", (key,)).fetchone()
-        return None if row is None else _farm_from(row)
-
-    def get(self, ref: str) -> Farm:
-        """The farm. Raises if the book does not have it."""
-        found = self.find(ref)
-        if found is None:
-            raise NotFoundError("farm", reference(ref, "farm"))
-        return found
-
-    def exists(self, ref: str) -> bool:
-        """Whether the book has a farm under this reference."""
-        return self.find(ref) is not None
-
-    def list_all(self) -> tuple[Farm, ...]:
-        """Every farm, in reference order."""
-        rows = self._connection.execute("SELECT * FROM farm ORDER BY ref").fetchall()
-        return tuple(_farm_from(row) for row in rows)
-
     def for_producer(self, producer: str) -> tuple[Farm, ...]:
         """Every farm a producer runs."""
-        key = reference(producer, "producer")
-        rows = self._connection.execute(
-            "SELECT * FROM farm WHERE producer = ? ORDER BY ref", (key,)
-        ).fetchall()
-        return tuple(_farm_from(row) for row in rows)
+        return self._select("producer = ?", (reference(producer, "producer"),))
 
 
-class FieldStore:
+class FieldStore(Repository[Field]):
     """The field register."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self._connection = connection
+    table = "field"
+    kind = "field"
+
+    def _from_row(self, row: sqlite3.Row) -> Field:
+        return _field_from(row)
 
     def add(self, plot: Field) -> None:
         """Put a field in the book. Raises if the reference is taken."""
@@ -113,43 +94,13 @@ class FieldStore:
             ),
         )
 
-    def find(self, ref: str) -> Field | None:
-        """The field, or None."""
-        key = reference(ref, "field")
-        row = self._connection.execute("SELECT * FROM field WHERE ref = ?", (key,)).fetchone()
-        return None if row is None else _field_from(row)
-
-    def get(self, ref: str) -> Field:
-        """The field. Raises if the book does not have it."""
-        found = self.find(ref)
-        if found is None:
-            raise NotFoundError("field", reference(ref, "field"))
-        return found
-
-    def exists(self, ref: str) -> bool:
-        """Whether the book has a field under this reference."""
-        return self.find(ref) is not None
-
-    def list_all(self) -> tuple[Field, ...]:
-        """Every field, in reference order."""
-        rows = self._connection.execute("SELECT * FROM field ORDER BY ref").fetchall()
-        return tuple(_field_from(row) for row in rows)
-
     def for_farm(self, farm: str) -> tuple[Field, ...]:
         """Every field on a farm."""
-        key = reference(farm, "farm")
-        rows = self._connection.execute(
-            "SELECT * FROM field WHERE farm = ? ORDER BY ref", (key,)
-        ).fetchall()
-        return tuple(_field_from(row) for row in rows)
+        return self._select("farm = ?", (reference(farm, "farm"),))
 
     def for_lease(self, lease: str) -> tuple[Field, ...]:
         """Every field farmed under one lease."""
-        key = reference(lease, "lease")
-        rows = self._connection.execute(
-            "SELECT * FROM field WHERE lease = ? ORDER BY ref", (key,)
-        ).fetchall()
-        return tuple(_field_from(row) for row in rows)
+        return self._select("lease = ?", (reference(lease, "lease"),))
 
 
 def _farm_from(row: sqlite3.Row) -> Farm:

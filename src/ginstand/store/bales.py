@@ -14,17 +14,26 @@ from __future__ import annotations
 import sqlite3
 from datetime import date
 
-from ginstand.errors import DuplicateError, NotFoundError
+from ginstand.errors import DuplicateError
 from ginstand.ids import gin_code, parse_pbi, reference
 from ginstand.model.bale import Bale
+from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_date, as_decimal
 
 
-class BaleStore:
+class BaleStore(Repository[Bale]):
     """Every bale the gin has pressed."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self._connection = connection
+    table = "bale"
+    kind = "bale"
+    key_column = "tag"
+    order_by = "tag"
+
+    def _key(self, value: str) -> str:
+        return _tag(value)
+
+    def _from_row(self, row: sqlite3.Row) -> Bale:
+        return _bale_from(row)
 
     def add(self, bale: Bale) -> None:
         """Record a bale off the press. Raises if the tag is taken."""
@@ -44,42 +53,13 @@ class BaleStore:
             ),
         )
 
-    def find(self, tag: str) -> Bale | None:
-        """The bale, or None."""
-        key = _tag(tag)
-        row = self._connection.execute("SELECT * FROM bale WHERE tag = ?", (key,)).fetchone()
-        return None if row is None else _bale_from(row)
-
-    def get(self, tag: str) -> Bale:
-        """The bale. Raises if the book does not have it."""
-        found = self.find(tag)
-        if found is None:
-            raise NotFoundError("bale", _tag(tag))
-        return found
-
-    def exists(self, tag: str) -> bool:
-        """Whether the book has a bale under this tag."""
-        return self.find(tag) is not None
-
-    def list_all(self) -> tuple[Bale, ...]:
-        """Every bale, in tag order, which is crop year then sequence."""
-        rows = self._connection.execute("SELECT * FROM bale ORDER BY tag").fetchall()
-        return tuple(_bale_from(row) for row in rows)
-
     def for_run(self, run: str) -> tuple[Bale, ...]:
         """Every bale that came off one run."""
-        key = reference(run, "gin run")
-        rows = self._connection.execute(
-            "SELECT * FROM bale WHERE run = ? ORDER BY tag", (key,)
-        ).fetchall()
-        return tuple(_bale_from(row) for row in rows)
+        return self._select("run = ?", (reference(run, "gin run"),))
 
     def pressed_on(self, day: date) -> tuple[Bale, ...]:
         """Every bale pressed on one day."""
-        rows = self._connection.execute(
-            "SELECT * FROM bale WHERE pressed = ? ORDER BY tag", (day.isoformat(),)
-        ).fetchall()
-        return tuple(_bale_from(row) for row in rows)
+        return self._select("pressed = ?", (day.isoformat(),))
 
     def count_for_run(self, run: str) -> int:
         """How many bales came off one run."""

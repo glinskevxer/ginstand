@@ -137,3 +137,19 @@ def test_adding_a_lease_twice_is_refused(book: sqlite3.Connection) -> None:
     leases.add(lease)
     with pytest.raises(DuplicateError, match="lease L-1 is already in the book"):
         leases.add(lease)
+
+
+def test_every_store_counts_what_it_holds(book: sqlite3.Connection) -> None:
+    store = ProducerStore(book)
+    assert store.count() == 0
+    store.add(ALDYS)
+    store.add(MERRICK)
+    assert store.count() == 2
+
+
+def test_a_store_normalises_the_key_on_every_lookup(book: sqlite3.Connection) -> None:
+    store = ProducerStore(book)
+    store.add(ALDYS)
+    for written in ("P-12", " p-12 ", "p-12"):
+        assert store.exists(written)
+        assert store.find(written) == ALDYS

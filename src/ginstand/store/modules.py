@@ -17,14 +17,20 @@ from datetime import date
 from ginstand.errors import DuplicateError, NotFoundError
 from ginstand.ids import reference
 from ginstand.model.module import Module, ModuleKind, WrapKind
+from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_date, as_decimal
 
 
-class ModuleStore:
+class ModuleStore(Repository[Module]):
     """Every module the gin has taken in."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self._connection = connection
+    table = "module"
+    kind = "module"
+    key_column = "tag"
+    order_by = "received, tag"
+
+    def _from_row(self, row: sqlite3.Row) -> Module:
+        return _module_from(row)
 
     def add(self, module: Module) -> None:
         """Weigh a module into the book. Raises if the tag is taken."""
@@ -72,42 +78,13 @@ class ModuleStore:
             ),
         )
 
-    def find(self, tag: str) -> Module | None:
-        """The module, or None."""
-        key = reference(tag, "module tag")
-        row = self._connection.execute("SELECT * FROM module WHERE tag = ?", (key,)).fetchone()
-        return None if row is None else _module_from(row)
-
-    def get(self, tag: str) -> Module:
-        """The module. Raises if the book does not have it."""
-        found = self.find(tag)
-        if found is None:
-            raise NotFoundError("module", reference(tag, "module tag"))
-        return found
-
-    def exists(self, tag: str) -> bool:
-        """Whether the book has a module under this tag."""
-        return self.find(tag) is not None
-
-    def list_all(self) -> tuple[Module, ...]:
-        """Every module, oldest received first."""
-        rows = self._connection.execute("SELECT * FROM module ORDER BY received, tag").fetchall()
-        return tuple(_module_from(row) for row in rows)
-
     def received_on(self, day: date) -> tuple[Module, ...]:
         """Every module weighed in on one day."""
-        rows = self._connection.execute(
-            "SELECT * FROM module WHERE received = ? ORDER BY tag", (day.isoformat(),)
-        ).fetchall()
-        return tuple(_module_from(row) for row in rows)
+        return self._select("received = ?", (day.isoformat(),))
 
     def for_field(self, field: str) -> tuple[Module, ...]:
         """Every module off one field."""
-        key = reference(field, "field")
-        rows = self._connection.execute(
-            "SELECT * FROM module WHERE field = ? ORDER BY received, tag", (key,)
-        ).fetchall()
-        return tuple(_module_from(row) for row in rows)
+        return self._select("field = ?", (reference(field, "field"),))
 
     def unginned(self) -> tuple[Module, ...]:
         """Every module that has not been fed into a run yet."""

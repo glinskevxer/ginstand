@@ -19,14 +19,23 @@ from ginstand.classing.matter import Extraneous, parse_extraneous
 from ginstand.errors import DuplicateError, NotFoundError
 from ginstand.ids import parse_pbi
 from ginstand.model.classing import Classing
+from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_date, as_decimal
 
 
-class CardStore:
+class CardStore(Repository[Classing]):
     """The classing cards the office has sent back."""
 
-    def __init__(self, connection: sqlite3.Connection) -> None:
-        self._connection = connection
+    table = "classing"
+    kind = "classing card"
+    key_column = "tag"
+    order_by = "tag"
+
+    def _key(self, value: str) -> str:
+        return _tag(value)
+
+    def _from_row(self, row: sqlite3.Row) -> Classing:
+        return _card_from(row)
 
     def add(self, card: Classing) -> None:
         """File a card against a bale. Raises if the bale already has one."""
@@ -75,28 +84,6 @@ class CardStore:
                 card.tag,
             ),
         )
-
-    def find(self, tag: str) -> Classing | None:
-        """The card, or None if the bale has not been classed yet."""
-        key = _tag(tag)
-        row = self._connection.execute("SELECT * FROM classing WHERE tag = ?", (key,)).fetchone()
-        return None if row is None else _card_from(row)
-
-    def get(self, tag: str) -> Classing:
-        """The card. Raises if the bale has not been classed."""
-        found = self.find(tag)
-        if found is None:
-            raise NotFoundError("classing card", _tag(tag))
-        return found
-
-    def exists(self, tag: str) -> bool:
-        """Whether the bale has a card yet."""
-        return self.find(tag) is not None
-
-    def list_all(self) -> tuple[Classing, ...]:
-        """Every card, in bale tag order."""
-        rows = self._connection.execute("SELECT * FROM classing ORDER BY tag").fetchall()
-        return tuple(_card_from(row) for row in rows)
 
     def for_run(self, run: str) -> tuple[Classing, ...]:
         """Every card against a bale off one run."""
