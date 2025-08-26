@@ -222,6 +222,33 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE UNIQUE INDEX seed_load_by_ticket ON seed_load(ticket) WHERE ticket <> ''",
         ),
     ),
+    Migration(
+        version=7,
+        name="warehouses and the receipts they issue",
+        statements=(
+            """
+            CREATE TABLE warehouse (
+                ref      TEXT PRIMARY KEY,
+                name     TEXT NOT NULL,
+                code     TEXT NOT NULL DEFAULT '',
+                location TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            """
+            CREATE TABLE receipt (
+                number    TEXT PRIMARY KEY,
+                tag       TEXT NOT NULL UNIQUE REFERENCES bale(tag),
+                warehouse TEXT NOT NULL REFERENCES warehouse(ref),
+                holder    TEXT NOT NULL REFERENCES producer(ref),
+                issued    TEXT NOT NULL,
+                released  TEXT,
+                note      TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX receipt_by_holder ON receipt(holder)",
+            "CREATE INDEX receipt_by_warehouse ON receipt(warehouse)",
+        ),
+    ),
 )
 
 
