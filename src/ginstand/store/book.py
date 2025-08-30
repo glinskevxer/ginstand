@@ -27,6 +27,7 @@ from ginstand.store.migrations import apply_pending, check_current, current_vers
 from ginstand.store.modules import ModuleStore
 from ginstand.store.runs import RunStore
 from ginstand.store.sqlite import IN_MEMORY, connect, transaction
+from ginstand.store.warehouses import ReceiptStore, WarehouseStore
 
 
 class Book:
@@ -44,6 +45,8 @@ class Book:
         self.cards = CardStore(connection)
         self.holds = HoldStore(connection)
         self.allocations = AllocationStore(connection)
+        self.warehouses = WarehouseStore(connection)
+        self.receipts = ReceiptStore(connection)
 
     @classmethod
     def create(cls, path: str | Path, on: date) -> Book:
