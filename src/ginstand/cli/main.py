@@ -79,6 +79,17 @@ def about(ctx: click.Context) -> None:
     run_command(work)
 
 
+def _register() -> None:
+    """Add every command group to the top level command."""
+    from ginstand.cli import growers
+
+    cli.add_command(growers.producer)
+    cli.add_command(growers.lease)
+
+
+_register()
+
+
 def run() -> None:
     """The console script entry point."""
     cli()
