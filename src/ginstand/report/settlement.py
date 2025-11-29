@@ -124,9 +124,10 @@ def producer_page(
     tariff: Tariff,
     seed_price_per_ton: Money,
     on: date,
+    extras: tuple[str, ...] = (),
 ) -> tuple[str, ...]:
     """One producer's statement, with the bale list under it."""
-    statement = settle(book, run_ref, producer, tariff, seed_price_per_ton, on)
+    statement = settle(book, run_ref, producer, tariff, seed_price_per_ton, on, extras)
     rows = []
     for tag in statement.share.bale_tags:
         bale = book.bales.get(tag)
