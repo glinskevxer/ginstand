@@ -81,7 +81,16 @@ def about(ctx: click.Context) -> None:
 
 def _register() -> None:
     """Add every command group to the top level command."""
-    from ginstand.cli import classing, gin, growers, land, loan, settling, warehousing
+    from ginstand.cli import (
+        classing,
+        gin,
+        growers,
+        land,
+        loan,
+        reports,
+        settling,
+        warehousing,
+    )
     from ginstand.cli import yard as yard_group
 
     cli.add_command(growers.producer)
@@ -95,6 +104,7 @@ def _register() -> None:
     cli.add_command(warehousing.warehouse)
     cli.add_command(warehousing.receipt)
     cli.add_command(settling.settle)
+    cli.add_command(reports.report)
 
 
 _register()
