@@ -38,6 +38,7 @@ class DateParam(click.ParamType):
     name = "date"
 
     def convert(self, value: Any, param: Any, ctx: Any) -> date:
+        """Read a date, or fail with the message the season module gave."""
         if isinstance(value, date):
             return value
         try:
@@ -52,6 +53,7 @@ class DecimalParam(click.ParamType):
     name = "number"
 
     def convert(self, value: Any, param: Any, ctx: Any) -> Decimal:
+        """Read a decimal, keeping every place that was typed."""
         if isinstance(value, Decimal):
             return value
         try:
