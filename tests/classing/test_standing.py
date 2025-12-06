@@ -7,9 +7,9 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade
-from ginstand.classing.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.classing.standing import OffSchedule, loan_eligible, standing_of
+from ginstand.grades.color import ColorGrade
+from ginstand.grades.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.model.classing import Classing
 
 

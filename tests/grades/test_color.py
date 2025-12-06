@@ -4,14 +4,14 @@ from __future__ import annotations
 
 import pytest
 
-from ginstand.classing.color import (
+from ginstand.errors import ValidationError
+from ginstand.grades.color import (
     BELOW_GRADE_RANK,
     CHART,
     ColorGrade,
     ColorGroup,
     valid_codes,
 )
-from ginstand.errors import ValidationError
 
 
 def test_a_code_reads_as_rank_then_group() -> None:

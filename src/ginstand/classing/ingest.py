@@ -17,9 +17,9 @@ from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
 
-from ginstand.classing.color import ColorGrade
-from ginstand.classing.matter import Extraneous, parse_extraneous
 from ginstand.errors import GinstandError, ValidationError
+from ginstand.grades.color import ColorGrade
+from ginstand.grades.matter import Extraneous, parse_extraneous
 from ginstand.model.classing import Classing
 
 RECORD_WIDTH = 50

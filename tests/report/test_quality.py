@@ -7,11 +7,11 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade
-from ginstand.classing.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.errors import StateError
 from ginstand.ginning.press import press
 from ginstand.ginning.run import feed, open_run
+from ginstand.grades.color import ColorGrade
+from ginstand.grades.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.model.classing import Classing
 from ginstand.report.quality import (
     averages,

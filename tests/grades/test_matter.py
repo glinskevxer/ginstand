@@ -4,7 +4,8 @@ from __future__ import annotations
 
 import pytest
 
-from ginstand.classing.matter import (
+from ginstand.errors import ValidationError
+from ginstand.grades.matter import (
     BELOW_GRADE_LEAF,
     Extraneous,
     ExtraneousKind,
@@ -14,7 +15,6 @@ from ginstand.classing.matter import (
     leaf_grade,
     parse_extraneous,
 )
-from ginstand.errors import ValidationError
 
 
 @pytest.mark.parametrize("grade", [1, 2, 3, 4, 5, 6, 7, 8])

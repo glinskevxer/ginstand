@@ -7,8 +7,8 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade
 from ginstand.errors import ValidationError
+from ginstand.grades.color import ColorGrade
 from ginstand.loan.lot import value_lot
 from ginstand.loan.schedule import schedule_for
 from ginstand.model.classing import Classing

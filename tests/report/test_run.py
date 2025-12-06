@@ -5,11 +5,11 @@ from __future__ import annotations
 from datetime import date
 from decimal import Decimal
 
-from ginstand.classing.color import ColorGrade
 from ginstand.ginning.allocate import allocate
 from ginstand.ginning.press import press
 from ginstand.ginning.run import close_run, feed, open_run
 from ginstand.ginning.seed import record_load
+from ginstand.grades.color import ColorGrade
 from ginstand.model.classing import Classing
 from ginstand.report.run import (
     allocation_sheet,

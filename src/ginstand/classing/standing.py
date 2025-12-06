@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from enum import StrEnum
 
-from ginstand.classing.matter import ExtraneousKind, ExtraneousLevel
+from ginstand.grades.matter import ExtraneousKind, ExtraneousLevel
 from ginstand.model.classing import Classing
 
 

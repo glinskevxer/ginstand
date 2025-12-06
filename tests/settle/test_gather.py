@@ -7,9 +7,9 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade
 from ginstand.errors import StateError
 from ginstand.ginning.run import close_run
+from ginstand.grades.color import ColorGrade
 from ginstand.model.classing import Classing
 from ginstand.settle.gather import gather, gather_all, producers_in
 from ginstand.store.book import Book

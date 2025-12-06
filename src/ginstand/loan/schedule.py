@@ -20,9 +20,9 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import Decimal
 
-from ginstand.classing.color import ColorGrade, ColorGroup
-from ginstand.classing.matter import BELOW_GRADE_LEAF
 from ginstand.errors import ScheduleError
+from ginstand.grades.color import ColorGrade, ColorGroup
+from ginstand.grades.matter import BELOW_GRADE_LEAF
 from ginstand.loan.points import Band, Ladder, Points
 
 WHITE_FAMILY = (ColorGroup.WHITE, ColorGroup.LIGHT_SPOTTED)

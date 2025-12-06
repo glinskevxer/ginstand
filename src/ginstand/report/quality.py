@@ -15,9 +15,9 @@ from collections import Counter
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 
-from ginstand.classing.matter import ExtraneousKind
 from ginstand.classing.standing import OffSchedule, standing_of
 from ginstand.errors import StateError
+from ginstand.grades.matter import ExtraneousKind
 from ginstand.report.table import Align, Column, Table
 from ginstand.store.book import Book
 

@@ -6,9 +6,9 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade, ColorGroup
 from ginstand.classing.estimate import Reading, agrees_with, drift, estimate
 from ginstand.errors import ValidationError
+from ginstand.grades.color import ColorGrade, ColorGroup
 
 
 @pytest.mark.parametrize(

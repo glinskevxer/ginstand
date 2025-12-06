@@ -8,9 +8,9 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade
-from ginstand.classing.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.errors import DuplicateError, NotFoundError
+from ginstand.grades.color import ColorGrade
+from ginstand.grades.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.model.bale import Bale
 from ginstand.model.classing import Classing
 from ginstand.model.ginrun import GinRun

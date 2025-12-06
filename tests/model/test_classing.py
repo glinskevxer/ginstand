@@ -7,9 +7,9 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade
-from ginstand.classing.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.errors import ValidationError
+from ginstand.grades.color import ColorGrade
+from ginstand.grades.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.model.classing import Classing
 
 

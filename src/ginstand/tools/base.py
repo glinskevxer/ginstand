@@ -36,8 +36,16 @@ def suite_files() -> Iterator[Path]:
 
 
 def module_name(path: Path) -> str:
-    """The dotted module name a source file has."""
-    relative = path.relative_to(source_root().parent)
+    """The dotted module name a source file has.
+
+    A file outside the package tree has no dotted name, and rather than raising
+    it comes back as its own stem. Checks run over scratch files in their tests,
+    and a name is all they need for a message.
+    """
+    try:
+        relative = path.relative_to(source_root().parent)
+    except ValueError:
+        return path.stem
     parts = list(relative.with_suffix("").parts)
     if parts[-1] == "__init__":
         parts.pop()

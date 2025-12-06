@@ -18,9 +18,9 @@ from dataclasses import dataclass, field
 from datetime import date
 from decimal import ROUND_HALF_UP, Decimal
 
-from ginstand.classing.color import ColorGrade
-from ginstand.classing.matter import Extraneous, carries_plastic, leaf_below_grade, leaf_grade
 from ginstand.errors import ValidationError
+from ginstand.grades.color import ColorGrade
+from ginstand.grades.matter import Extraneous, carries_plastic, leaf_below_grade, leaf_grade
 from ginstand.ids import parse_pbi
 from ginstand.units.staple import check_staple
 

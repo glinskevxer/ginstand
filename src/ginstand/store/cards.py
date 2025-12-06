@@ -14,9 +14,9 @@ from __future__ import annotations
 
 import sqlite3
 
-from ginstand.classing.color import ColorGrade
-from ginstand.classing.matter import Extraneous, parse_extraneous
 from ginstand.errors import DuplicateError, NotFoundError
+from ginstand.grades.color import ColorGrade
+from ginstand.grades.matter import Extraneous, parse_extraneous
 from ginstand.ids import parse_pbi
 from ginstand.model.classing import Classing
 from ginstand.store.repository import Repository

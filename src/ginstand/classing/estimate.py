@@ -21,8 +21,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 
-from ginstand.classing.color import BELOW_GRADE_RANK, CHART, ColorGrade, ColorGroup
 from ginstand.errors import ValidationError
+from ginstand.grades.color import BELOW_GRADE_RANK, CHART, ColorGrade, ColorGroup
 
 MIN_RD = Decimal("40.0")
 MAX_RD = Decimal("90.0")

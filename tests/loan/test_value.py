@@ -7,8 +7,8 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade
-from ginstand.classing.matter import Extraneous, ExtraneousKind, ExtraneousLevel
+from ginstand.grades.color import ColorGrade
+from ginstand.grades.matter import Extraneous, ExtraneousKind, ExtraneousLevel
 from ginstand.loan.schedule import Schedule, schedule_for
 from ginstand.loan.value import MINIMUM_RATE, value_bale
 from ginstand.model.classing import Classing

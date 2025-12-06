@@ -6,8 +6,8 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import CHART, ColorGrade, ColorGroup, valid_codes
 from ginstand.errors import ScheduleError
+from ginstand.grades.color import CHART, ColorGrade, ColorGroup, valid_codes
 from ginstand.loan.schedule import (
     COLOUR_POINTS,
     LEAF_POINTS,

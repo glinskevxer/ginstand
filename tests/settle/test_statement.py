@@ -8,8 +8,8 @@ from decimal import Decimal
 import pytest
 
 from ginstand.charges.tariff import Basis, Tariff, TariffLine
-from ginstand.classing.color import ColorGrade
 from ginstand.ginning.seed import record_load
+from ginstand.grades.color import ColorGrade
 from ginstand.model.classing import Classing
 from ginstand.settle.gather import gather
 from ginstand.settle.statement import seed_credit_for, settle

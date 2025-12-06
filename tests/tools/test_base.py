@@ -50,6 +50,10 @@ def test_a_module_name_is_dotted_and_drops_the_init() -> None:
     assert module_name(source_root() / "units" / "__init__.py") == "ginstand.units"
 
 
+def test_a_file_outside_the_package_comes_back_as_its_stem(tmp_path: Path) -> None:
+    assert module_name(tmp_path / "scratch.py") == "scratch"
+
+
 def test_a_finding_prints_relative_to_the_checkout() -> None:
     finding = Finding(source_root() / "errors.py", 12, "something")
     assert str(finding) == "src/ginstand/errors.py:12: something"

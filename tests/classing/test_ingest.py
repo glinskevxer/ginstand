@@ -7,9 +7,9 @@ from decimal import Decimal
 
 import pytest
 
-from ginstand.classing.color import ColorGrade
 from ginstand.classing.ingest import parse_record, read
 from ginstand.errors import ValidationError
+from ginstand.grades.color import ColorGrade
 
 RECORD = "2541207000612025102231335043294812006BK1      MEM "
 LONGER = RECORD + "reclass requested"
