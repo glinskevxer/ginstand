@@ -1,0 +1,158 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]" -c constraints.txt
+      - run: python -m ruff check .
+      - run: python -m ruff format --check .
+      - run: python -m mypy
+      - run: python -m ginstand.tools.check_docstrings
+      - run: python -m ginstand.tools.check_clock
+      - run: python -m ginstand.tools.check_layers
+      - run: python -m ginstand.tools.check_migrations
+      - run: python -m ginstand.tools.check_tests
+      - run: python -m ginstand.tools.check_help
+
+  tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]" -c constraints.txt
+      - run: python -m pytest -q
+
+  coverage:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install -e ".[dev]" -c constraints.txt
+      - run: python -m pytest -q --cov --cov-report=json --cov-report=term-missing
+      - run: python -m ginstand.tools.coverage_gate --floor 90 --file-floor 70
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: coverage.json
+
+  installed:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install .
+      - run: ginstand --version
+      - run: python -m ginstand.tools.smoke
+
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip build
+      - run: python -m build
+      - run: python -m pip install dist/*.whl
+      - run: python -c "import ginstand; print(ginstand.__version__)"
+      - run: python -m ginstand.tools.smoke --quiet
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist
+
+  walk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+      - run: python -m pip install --upgrade pip
+      - run: python -m pip install .
+      - name: gin a season through the console script
+        run: |
+          set -euo pipefail
+          book=/tmp/walk.sqlite3
+          ginstand --book "$book" init --on 2025-08-04
+          ginstand --book "$book" producer add P-12 "Aldys Brothers" --ccc A4471
+          ginstand --book "$book" producer add P-40 "Merrick Land Co"
+          ginstand --book "$book" lease add L-1 P-12 --kind owner
+          ginstand --book "$book" lease add L-2 P-12 --kind share \
+            --landlord P-40 --share 0.25
+          ginstand --book "$book" farm add F-3 P-12 "Home Place"
+          ginstand --book "$book" field add FL-9 F-3 "North 80" \
+            --acres 78.4 --lease L-1
+          ginstand --book "$book" field add FL-2 F-3 "Turnrow" \
+            --acres 30 --lease L-2
+          ginstand --book "$book" warehouse add WH-1 "Delta Compress" --code 41-207
+          ginstand --book "$book" yard receive M-1 --field FL-9 \
+            --harvested 2025-09-30 --received 2025-10-02 \
+            --gross 56140 --tare 26140 --moisture 9.4 --wrap tarp
+          ginstand --book "$book" yard receive M-2 --field FL-2 \
+            --harvested 2025-09-30 --received 2025-10-02 \
+            --gross 46140 --tare 26140 --moisture 12.6 --wrap tarp
+          ginstand --book "$book" yard standing --on 2025-10-12
+          ginstand --book "$book" yard queue --on 2025-10-12
+          ginstand --book "$book" run open GR-1 --gin-code 41207 --on 2025-10-14
+          ginstand --book "$book" run feed-queue GR-1 --on 2025-10-14
+          ginstand --book "$book" run press GR-1 --on 2025-10-14 \
+            --gross 512 --tare 22 --moisture 6.8 --count 34
+          ginstand --book "$book" run seed GR-1 --on 2025-10-14 --pounds 24500
+          ginstand --book "$book" run close GR-1 --on 2025-10-14 --allocate
+          ginstand --book "$book" run sheet GR-1
+          ginstand --book "$book" card estimate --rd 74.0 --plus-b 8.2
+          ginstand --book "$book" card outstanding
+          ginstand --book "$book" receipt issue 254120700001 \
+            --warehouse WH-1 --on 2025-10-30
+          ginstand --book "$book" receipt list
+          ginstand --book "$book" receipt storage P-12 --on 2026-01-30 --crop-year 2025
+          ginstand --book "$book" settle shares GR-1
+          ginstand --book "$book" settle register GR-1 --on 2025-11-03
+          ginstand --book "$book" settle check GR-1 --on 2025-11-03
+          ginstand --book "$book" settle tariff --crop-year 2025
+          ginstand --book "$book" loan schedule --crop-year 2025 --table mic
+          ginstand --book "$book" report season --crop-year 2025 --runs --producers
+          ginstand --book "$book" report book
+          ginstand --book "$book" about
