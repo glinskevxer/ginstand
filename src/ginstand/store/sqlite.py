@@ -3,6 +3,12 @@
 Foreign keys are off by default in sqlite and have to be turned on per
 connection. Write ahead logging keeps a long report from blocking the scale
 house. Both are set here so no caller has to remember them.
+
+Use :func:`opened` rather than putting :func:`connect` in a ``with``. A sqlite
+connection is a context manager for its *transaction*, not for itself: leaving
+its block commits and does not close. Python 3.13 warns about the connection
+that is left behind and 3.12 does not, so a leak written on one of them is
+found on the other.
 """
 
 from __future__ import annotations
@@ -30,6 +36,19 @@ def connect(path: str | Path) -> sqlite3.Connection:
         connection.execute("PRAGMA journal_mode = WAL")
     connection.execute("PRAGMA busy_timeout = 5000")
     return connection
+
+
+@contextmanager
+def opened(path: str | Path) -> Iterator[sqlite3.Connection]:
+    """Open a book and close it when the block ends.
+
+    This is what a ``with`` around a connection ought to mean and does not.
+    """
+    connection = connect(path)
+    try:
+        yield connection
+    finally:
+        connection.close()
 
 
 @contextmanager

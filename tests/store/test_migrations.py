@@ -17,19 +17,19 @@ from ginstand.store.migrations import (
     latest_version,
     pending,
 )
-from ginstand.store.sqlite import connect, table_names
+from ginstand.store.sqlite import opened, table_names
 
 DAY = date(2025, 8, 4)
 
 
 def test_a_fresh_book_is_at_version_zero() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         assert current_version(connection) == 0
         assert len(pending(connection)) == len(MIGRATIONS)
 
 
 def test_applying_brings_the_book_to_the_version_the_code_writes() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         done = apply_pending(connection, DAY)
         assert [m.version for m in done] == [m.version for m in MIGRATIONS]
         assert current_version(connection) == latest_version()
@@ -37,20 +37,20 @@ def test_applying_brings_the_book_to_the_version_the_code_writes() -> None:
 
 
 def test_applying_twice_does_nothing_the_second_time() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         apply_pending(connection, DAY)
         assert apply_pending(connection, DAY) == ()
         assert current_version(connection) == latest_version()
 
 
 def test_the_day_recorded_is_the_day_that_was_passed_in() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         apply_pending(connection, date(2025, 9, 1))
         assert {row[2] for row in applied(connection)} == {"2025-09-01"}
 
 
 def test_the_record_of_what_was_applied_reads_back_in_order() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         apply_pending(connection, DAY)
         versions = [row[0] for row in applied(connection)]
         assert versions == sorted(versions)
@@ -58,7 +58,7 @@ def test_the_record_of_what_was_applied_reads_back_in_order() -> None:
 
 
 def test_the_first_migration_stands_up_the_grower_records() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         apply_pending(connection, DAY)
         names = table_names(connection)
         for table in ("producer", "lease", "farm", "field", MIGRATION_TABLE):
@@ -66,7 +66,7 @@ def test_the_first_migration_stands_up_the_grower_records() -> None:
 
 
 def test_a_book_written_by_a_newer_version_is_refused() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         apply_pending(connection, DAY)
         connection.execute(
             f"INSERT INTO {MIGRATION_TABLE} VALUES (?, ?, ?)",
@@ -77,7 +77,7 @@ def test_a_book_written_by_a_newer_version_is_refused() -> None:
 
 
 def test_the_current_check_names_both_versions() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         with pytest.raises(StateError, match="is at schema version 0"):
             check_current(connection)
         apply_pending(connection, DAY)
@@ -96,7 +96,7 @@ def test_every_migration_has_a_name_and_at_least_one_statement() -> None:
 
 
 def test_the_grower_tables_enforce_their_references() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         apply_pending(connection, DAY)
         with pytest.raises(Exception, match="FOREIGN KEY"):
             connection.execute(

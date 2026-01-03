@@ -16,29 +16,30 @@ from ginstand.store.sqlite import (
     as_optional_date,
     as_text,
     connect,
+    opened,
     table_names,
     transaction,
 )
 
 
 def test_foreign_keys_are_on_for_every_connection() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
 
 
 def test_a_file_book_runs_in_write_ahead_logging(tmp_path: Path) -> None:
-    with connect(tmp_path / "book.sqlite3") as connection:
+    with opened(tmp_path / "book.sqlite3") as connection:
         assert connection.execute("PRAGMA journal_mode").fetchone()[0] == "wal"
 
 
 def test_rows_come_back_by_column_name() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         row = connection.execute("SELECT 1 AS bales").fetchone()
         assert row["bales"] == 1
 
 
 def test_a_transaction_commits_when_the_block_finishes() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         connection.execute("CREATE TABLE t (a INTEGER)")
         with transaction(connection):
             connection.execute("INSERT INTO t VALUES (1)")
@@ -51,7 +52,7 @@ def test_a_transaction_rolls_the_whole_block_back_on_an_error() -> None:
             connection.execute("INSERT INTO t VALUES (1)")
             raise ValueError("stop")
 
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         connection.execute("CREATE TABLE t (a INTEGER)")
         with pytest.raises(ValueError, match="stop"):
             insert_then_fail(connection)
@@ -64,7 +65,7 @@ def test_a_nested_transaction_is_refused_rather_than_flattened() -> None:
             pass
 
     with (
-        connect(":memory:") as connection,
+        opened(":memory:") as connection,
         transaction(connection),
         pytest.raises(StateError, match="already open"),
     ):
@@ -72,7 +73,7 @@ def test_a_nested_transaction_is_refused_rather_than_flattened() -> None:
 
 
 def test_a_foreign_key_violation_is_raised_not_ignored() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         connection.execute("CREATE TABLE parent (a INTEGER PRIMARY KEY)")
         connection.execute("CREATE TABLE child (a INTEGER REFERENCES parent(a))")
         with pytest.raises(sqlite3.IntegrityError):
@@ -94,7 +95,7 @@ def test_values_go_into_the_book_as_text_a_person_can_read(given: object, stored
 
 
 def test_a_decimal_keeps_its_places_through_the_book() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         connection.execute("CREATE TABLE r (rate TEXT)")
         connection.execute("INSERT INTO r VALUES (?)", (as_text(Decimal("52.0050")),))
         back = as_decimal(connection.execute("SELECT rate FROM r").fetchone()["rate"])
@@ -121,7 +122,36 @@ def test_a_column_that_is_not_a_decimal_is_a_book_fault(value: object) -> None:
 
 
 def test_the_table_list_comes_back_in_name_order() -> None:
-    with connect(":memory:") as connection:
+    with opened(":memory:") as connection:
         connection.execute("CREATE TABLE zeta (a INTEGER)")
         connection.execute("CREATE TABLE alpha (a INTEGER)")
         assert table_names(connection) == ("alpha", "zeta")
+
+
+def test_the_opened_block_closes_the_connection() -> None:
+    with opened(":memory:") as connection:
+        assert connection.execute("SELECT 1").fetchone()[0] == 1
+    with pytest.raises(sqlite3.ProgrammingError, match="Cannot operate on a closed"):
+        connection.execute("SELECT 1")
+
+
+def test_the_connection_closes_even_when_the_block_raises() -> None:
+    held: list[sqlite3.Connection] = []
+
+    def fail() -> None:
+        with opened(":memory:") as connection:
+            held.append(connection)
+            raise ValueError("stop")
+
+    with pytest.raises(ValueError, match="stop"):
+        fail()
+    with pytest.raises(sqlite3.ProgrammingError, match="Cannot operate on a closed"):
+        held[0].execute("SELECT 1")
+
+
+def test_a_plain_connection_can_still_be_opened_and_closed_by_hand() -> None:
+    connection = connect(":memory:")
+    try:
+        assert connection.execute("PRAGMA foreign_keys").fetchone()[0] == 1
+    finally:
+        connection.close()
