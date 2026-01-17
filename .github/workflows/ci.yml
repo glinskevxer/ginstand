@@ -33,6 +33,7 @@ jobs:
       - run: python -m ginstand.tools.check_wiring
       - run: python -m ginstand.tools.check_pins
       - run: python -m ginstand.tools.check_messages
+      - run: python -m ginstand.tools.schema_dump --check
 
   tests:
     runs-on: ubuntu-latest
