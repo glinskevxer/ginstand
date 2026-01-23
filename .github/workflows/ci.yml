@@ -34,6 +34,7 @@ jobs:
       - run: python -m ginstand.tools.check_pins
       - run: python -m ginstand.tools.check_messages
       - run: python -m ginstand.tools.schema_dump --check
+      - run: python -m ginstand.tools.build_docs --check
 
   tests:
     runs-on: ubuntu-latest
