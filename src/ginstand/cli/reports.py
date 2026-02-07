@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 import click
 
-from ginstand.cli.common import context, run_command
+from ginstand.cli.common import DATE, context, run_command
 from ginstand.report import quality, season
+from ginstand.report.audit import audit_table, faults
 
 
 @click.group()
@@ -77,6 +80,25 @@ def report_quality(ctx: click.Context, crop_year: int, table: str) -> None:
         if table == "off-schedule":
             return quality.off_schedule(holder.book, crop_year).render()
         return quality.contamination(holder.book, crop_year).render()
+
+    run_command(work)
+
+
+@report.command("audit")
+@click.option("--on", type=DATE, required=True, help="the day to audit at")
+@click.option("--faults-only", is_flag=True, help="leave out the queries")
+@click.pass_context
+def report_audit(ctx: click.Context, on: date, faults_only: bool) -> None:
+    """Read the whole book looking for things that cannot be true."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        if faults_only:
+            found = faults(holder.book, on)
+            if not found:
+                return ("no faults",)
+            return tuple(note.line for note in found)
+        return audit_table(holder.book, on).render()
 
     run_command(work)
 

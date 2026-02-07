@@ -615,6 +615,17 @@ ginstand report quality
 - `--crop-year` — which crop year (required)
 - `--table` — which part of the quality report
 
+### report audit
+
+Read the whole book looking for things that cannot be true.
+
+```
+ginstand report audit
+```
+
+- `--on` — the day to audit at (required)
+- `--faults-only` — leave out the queries
+
 ### report book
 
 What the whole book holds, one line per register.

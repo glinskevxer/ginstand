@@ -135,3 +135,61 @@ def test_the_book_report_counts_every_register(season: Callable[..., Result]) ->
     assert "producers  1" in output
     assert "bales      14" in output
     assert "14 bales waiting" in output
+
+
+def test_the_audit_reads_the_whole_book(season: Callable[..., Result]) -> None:
+    output = season("report", "audit", "--on", "2025-10-20").output
+    assert "Book audit at 2025-10-20" in output
+    assert "14 bales have no card yet" in output
+
+
+def test_the_audit_can_be_narrowed_to_faults(season: Callable[..., Result]) -> None:
+    assert "no faults" in season("report", "audit", "--on", "2025-10-20", "--faults-only").output
+
+
+def test_a_closed_run_with_no_allocation_shows_as_a_fault(
+    gin: Callable[..., Result],
+) -> None:
+    gin("producer", "add", "P-12", "Aldys Brothers")
+    gin("lease", "add", "L-1", "P-12", "--kind", "owner")
+    gin("farm", "add", "F-3", "P-12", "Home Place")
+    gin("field", "add", "FL-9", "F-3", "North 80", "--acres", "78.4", "--lease", "L-1")
+    gin(
+        "yard",
+        "receive",
+        "M-1",
+        "--field",
+        "FL-9",
+        "--harvested",
+        "2025-09-28",
+        "--received",
+        "2025-10-02",
+        "--gross",
+        "46140",
+        "--tare",
+        "26140",
+        "--moisture",
+        "9.4",
+        "--wrap",
+        "tarp",
+    )
+    gin("run", "open", "GR-1", "--gin-code", "41207", "--on", "2025-10-14")
+    gin("run", "feed", "GR-1", "M-1", "--on", "2025-10-14")
+    gin(
+        "run",
+        "press",
+        "GR-1",
+        "--on",
+        "2025-10-14",
+        "--gross",
+        "512",
+        "--tare",
+        "22",
+        "--moisture",
+        "6.8",
+        "--count",
+        "2",
+    )
+    gin("run", "close", "GR-1", "--on", "2025-10-14")
+    output = gin("report", "audit", "--on", "2025-10-20", "--faults-only").output
+    assert "no allocation" in output
