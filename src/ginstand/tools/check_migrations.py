@@ -42,6 +42,7 @@ EXTRA_TABLES = {
     "bale_allocation",
     "allocation_carry",
     "seed_load",
+    "recheck",
 }
 """Tables no repository owns, because nothing reads them as whole records."""
 

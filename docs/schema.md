@@ -1,6 +1,6 @@
 # The book
 
-Schema version 7, built by 7 migrations.
+Schema version 8, built by 8 migrations.
 
 This file is generated. Run `python -m ginstand.tools.schema_dump` after
 adding a migration, and CI will tell you if you forgot.
@@ -14,6 +14,7 @@ adding a migration, and CI will tell you if you forgot.
 5. bale allocation and the carry it leaves
 6. cottonseed loads off a run
 7. warehouses and the receipts they issue
+8. recheck requests against a classing card
 
 ## Tables
 
@@ -193,6 +194,25 @@ CREATE TABLE receipt (
 - `CREATE INDEX receipt_by_holder ON receipt(holder)`
 
 - `CREATE INDEX receipt_by_warehouse ON receipt(warehouse)`
+
+### recheck
+
+```sql
+CREATE TABLE recheck (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    tag TEXT NOT NULL REFERENCES bale(tag),
+    requested TEXT NOT NULL,
+    reason TEXT NOT NULL,
+    requested_by TEXT NOT NULL DEFAULT '',
+    settled TEXT,
+    outcome TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT ''
+)
+```
+
+- `CREATE INDEX recheck_by_tag ON recheck(tag)`
+
+- `CREATE UNIQUE INDEX recheck_one_open ON recheck(tag) WHERE settled IS NULL`
 
 ### run_module
 

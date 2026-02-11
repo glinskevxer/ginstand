@@ -249,6 +249,26 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE INDEX receipt_by_warehouse ON receipt(warehouse)",
         ),
     ),
+    Migration(
+        version=8,
+        name="recheck requests against a classing card",
+        statements=(
+            """
+            CREATE TABLE recheck (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                tag          TEXT NOT NULL REFERENCES bale(tag),
+                requested    TEXT NOT NULL,
+                reason       TEXT NOT NULL,
+                requested_by TEXT NOT NULL DEFAULT '',
+                settled      TEXT,
+                outcome      TEXT NOT NULL DEFAULT '',
+                note         TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX recheck_by_tag ON recheck(tag)",
+            "CREATE UNIQUE INDEX recheck_one_open ON recheck(tag) WHERE settled IS NULL",
+        ),
+    ),
 )
 
 
