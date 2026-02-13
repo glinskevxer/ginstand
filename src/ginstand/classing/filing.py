@@ -14,8 +14,10 @@ classing office is reachable, which on a Friday afternoon is never.
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import date
 
 from ginstand.classing.ingest import Reading
+from ginstand.classing.recheck import settle_from_card
 from ginstand.errors import GinstandError
 from ginstand.model.classing import Classing
 from ginstand.store.book import Book
@@ -66,12 +68,18 @@ def check(book: Book, card: Classing, recheck: bool) -> str:
 
 
 def file_card(book: Book, card: Classing, recheck: bool = False) -> str:
-    """File one card. Returns "filed", "replaced", or the reason it was not taken."""
+    """File one card. Returns "filed", "replaced", or the reason it was not taken.
+
+    Replacing a card closes the bale's open recheck request, if it has one, and
+    the outcome is worked out by comparing the two cards rather than asserted.
+    """
     reason = check(book, card, recheck)
     if reason:
         return reason
-    if book.cards.exists(card.tag):
+    standing = book.cards.find(card.tag)
+    if standing is not None:
         book.cards.replace(card)
+        settle_from_card(book, standing, card, card.classed)
         return "replaced"
     book.cards.add(card)
     return "filed"
@@ -100,3 +108,8 @@ def file_reading(book: Book, reading: Reading, recheck: bool = False) -> Filing:
 def outstanding(book: Book) -> tuple[str, ...]:
     """Every bale in the book still waiting on a card."""
     return book.cards.unclassed_tags()
+
+
+def rechecks_closed_by(book: Book, on: date) -> int:
+    """How many recheck requests a day's filing answered."""
+    return len(book.rechecks.settled_between(on, on))
