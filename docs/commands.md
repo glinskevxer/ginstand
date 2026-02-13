@@ -390,6 +390,54 @@ ginstand card estimate
 - `--rd` — reflectance off the colorimeter (required)
 - `--plus-b` — yellowness off the colorimeter (required)
 
+## recheck
+
+Recheck requests against a classing card.
+
+### recheck ask
+
+Ask the office to read a sample again.
+
+```
+ginstand recheck ask <tag>
+```
+
+- `--reason` — what the gin thinks is wrong (required)
+- `--on` — the day the request is sent (required)
+- `--by` — who asked
+- `--note` — anything worth recording
+
+### recheck settle
+
+Answer an open request by hand.
+
+```
+ginstand recheck settle <tag>
+```
+
+- `--outcome` — what the office said (required)
+- `--on` — the day the answer came back (required)
+- `--note` — anything worth recording
+
+### recheck list
+
+Every request the office still has.
+
+```
+ginstand recheck list
+```
+
+- `--on` — the day to count the days out to (required)
+- `--chase` — only the ones out too long
+
+### recheck history
+
+Every request ever made against one bale.
+
+```
+ginstand recheck history <tag>
+```
+
 ## loan
 
 The commodity loan schedule.

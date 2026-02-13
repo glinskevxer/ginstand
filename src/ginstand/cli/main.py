@@ -100,6 +100,7 @@ def _register() -> None:
     cli.add_command(yard_group.yard)
     cli.add_command(gin.run)
     cli.add_command(classing.card)
+    cli.add_command(classing.recheck)
     cli.add_command(loan.loan)
     cli.add_command(warehousing.warehouse)
     cli.add_command(warehousing.receipt)

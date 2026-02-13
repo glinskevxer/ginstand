@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from datetime import date
 from decimal import Decimal
 from pathlib import Path
 
@@ -10,8 +11,11 @@ import click
 from ginstand.classing.estimate import Reading
 from ginstand.classing.filing import file_reading, outstanding
 from ginstand.classing.ingest import read
+from ginstand.classing.recheck import outstanding as open_rechecks
+from ginstand.classing.recheck import request, settle, to_chase
 from ginstand.classing.standing import standing_of
-from ginstand.cli.common import NUMBER, context, run_command
+from ginstand.cli.common import DATE, NUMBER, context, run_command
+from ginstand.model.recheck import RecheckOutcome, RecheckReason
 from ginstand.report.table import Align, Column, Table
 
 
@@ -144,5 +148,136 @@ def card_estimate(ctx: click.Context, rd: Decimal, plus_b: Decimal) -> None:
             f"  {grade.code}  {grade.name}",
             "  this is the gin's estimate, the card is what counts",
         ]
+
+    run_command(work)
+
+
+@click.group()
+def recheck() -> None:
+    """Recheck requests against a classing card."""
+
+
+@recheck.command("ask")
+@click.argument("tag")
+@click.option(
+    "--reason",
+    type=click.Choice([reason.value for reason in RecheckReason]),
+    required=True,
+    help="what the gin thinks is wrong",
+)
+@click.option("--on", type=DATE, required=True, help="the day the request is sent")
+@click.option("--by", default="", help="who asked")
+@click.option("--note", default="", help="anything worth recording")
+@click.pass_context
+def recheck_ask(ctx: click.Context, tag: str, reason: str, on: date, by: str, note: str) -> None:
+    """Ask the office to read a sample again."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        with holder.book.writing() as writing:
+            sent = request(writing, tag, RecheckReason(reason), on, by, note)
+        return [f"recheck {sent.recheck_id} sent on {sent.tag} for {sent.reason}"]
+
+    run_command(work)
+
+
+@recheck.command("settle")
+@click.argument("tag")
+@click.option(
+    "--outcome",
+    type=click.Choice(
+        [outcome.value for outcome in RecheckOutcome if outcome is not RecheckOutcome.OPEN]
+    ),
+    required=True,
+    help="what the office said",
+)
+@click.option("--on", type=DATE, required=True, help="the day the answer came back")
+@click.option("--note", default="", help="anything worth recording")
+@click.pass_context
+def recheck_settle(ctx: click.Context, tag: str, outcome: str, on: date, note: str) -> None:
+    """Answer an open request by hand."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        with holder.book.writing() as writing:
+            answered = settle(writing, tag, on, RecheckOutcome(outcome), note)
+        return [
+            f"recheck on {answered.tag} came back {answered.outcome} "
+            f"after {answered.days_out(on)} days"
+        ]
+
+    run_command(work)
+
+
+@recheck.command("list")
+@click.option("--on", type=DATE, required=True, help="the day to count the days out to")
+@click.option("--chase", is_flag=True, help="only the ones out too long")
+@click.pass_context
+def recheck_list(ctx: click.Context, on: date, chase: bool) -> None:
+    """Every request the office still has."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        found = tuple(to_chase(holder.book, on)) if chase else open_rechecks(holder.book)
+        rows = tuple(
+            (
+                str(item.recheck_id),
+                item.tag,
+                str(item.reason),
+                item.requested.isoformat(),
+                str(item.days_out(on)),
+                item.requested_by,
+            )
+            for item in found
+        )
+        return Table(
+            title="Rechecks out" + (" too long" if chase else ""),
+            columns=(
+                Column("id", Align.RIGHT),
+                Column("bale"),
+                Column("reason"),
+                Column("sent"),
+                Column("days", Align.RIGHT),
+                Column("by"),
+            ),
+            rows=rows,
+            empty_note="nothing is out",
+        ).render()
+
+    run_command(work)
+
+
+@recheck.command("history")
+@click.argument("tag")
+@click.pass_context
+def recheck_history(ctx: click.Context, tag: str) -> None:
+    """Every request ever made against one bale."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        rows = tuple(
+            (
+                str(item.recheck_id),
+                str(item.reason),
+                item.requested.isoformat(),
+                item.settled.isoformat() if item.settled else "",
+                str(item.outcome),
+                item.note,
+            )
+            for item in holder.book.rechecks.history_for(tag)
+        )
+        return Table(
+            title=f"Rechecks on bale {tag.strip()}",
+            columns=(
+                Column("id", Align.RIGHT),
+                Column("reason"),
+                Column("sent"),
+                Column("answered"),
+                Column("outcome"),
+                Column("what moved"),
+            ),
+            rows=rows,
+            empty_note="this bale has never been rechecked",
+        ).render()
 
     run_command(work)

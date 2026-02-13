@@ -114,9 +114,13 @@ def settle_from_card(book: Book, before: Classing, after: Classing, on: date) ->
 
     Returns None where there was no request out, because a recheck file can
     carry a card for a bale nobody asked about and that is not an error.
+
+    It also returns None for a card dated before the request. A card the office
+    issued before it was asked anything is the same card coming round again,
+    usually because a file was filed twice, and it is not an answer.
     """
     standing = book.rechecks.open_for(after.tag)
-    if standing is None:
+    if standing is None or after.classed < standing.requested:
         return None
     moved = differences(before, after)
     outcome = RecheckOutcome.CHANGED if moved else RecheckOutcome.UNCHANGED

@@ -122,7 +122,9 @@ def test_a_recheck_card_that_moved_something_closes_it_as_changed(book: Book) ->
 def test_a_recheck_card_that_moved_nothing_closes_it_as_unchanged(book: Book) -> None:
     book.cards.add(a_card())
     request(book, "254120700061", RecheckReason.LEAF, REQUESTED)
-    answered = settle_from_card(book, a_card(), a_card(), date(2025, 11, 3))
+    answered = settle_from_card(
+        book, a_card(), a_card(classed=date(2025, 11, 3)), date(2025, 11, 3)
+    )
     assert answered is not None
     assert answered.outcome is RecheckOutcome.UNCHANGED
     assert answered.note == ""
@@ -131,6 +133,13 @@ def test_a_recheck_card_that_moved_nothing_closes_it_as_unchanged(book: Book) ->
 def test_a_card_for_a_bale_nobody_asked_about_closes_nothing(book: Book) -> None:
     book.cards.add(a_card())
     assert settle_from_card(book, a_card(), a_card(leaf=2), date(2025, 11, 3)) is None
+
+
+def test_a_card_dated_before_the_request_is_not_an_answer(book: Book) -> None:
+    book.cards.add(a_card())
+    request(book, "254120700061", RecheckReason.LEAF, REQUESTED)
+    assert settle_from_card(book, a_card(), a_card(leaf=2), date(2025, 11, 3)) is None
+    assert len(outstanding(book)) == 1
 
 
 def test_filing_a_recheck_closes_the_request(book: Book) -> None:

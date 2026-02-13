@@ -154,3 +154,86 @@ def test_an_estimate_off_the_instrument_range_is_refused(
     result = ginned("card", "estimate", "--rd", "30.0", "--plus-b", "8.0")
     assert result.exit_code != 0
     assert "Rd" in result.output
+
+
+def a_carded_book(ginned: Callable[..., Result], tmp_path: Path) -> None:
+    path = tmp_path / "cards.txt"
+    path.write_text(f"{record(1)}\n")
+    ginned("card", "file", str(path))
+
+
+def test_a_recheck_can_be_asked_for(ginned: Callable[..., Result], tmp_path: Path) -> None:
+    a_carded_book(ginned, tmp_path)
+    result = ginned(
+        "recheck",
+        "ask",
+        "254120700001",
+        "--reason",
+        "colour",
+        "--on",
+        "2025-10-27",
+        "--by",
+        "R Ellis",
+    )
+    assert result.exit_code == 0
+    assert "sent on 254120700001 for colour" in result.output
+
+
+def test_a_recheck_on_an_unclassed_bale_is_refused(
+    ginned: Callable[..., Result],
+) -> None:
+    result = ginned("recheck", "ask", "254120700001", "--reason", "colour", "--on", "2025-10-27")
+    assert result.exit_code != 0
+    assert "nothing to recheck" in result.output
+
+
+def test_a_recheck_past_the_window_is_refused(
+    ginned: Callable[..., Result], tmp_path: Path
+) -> None:
+    a_carded_book(ginned, tmp_path)
+    result = ginned("recheck", "ask", "254120700001", "--reason", "colour", "--on", "2025-12-01")
+    assert result.exit_code != 0
+    assert "only held to" in result.output
+
+
+def test_the_open_list_shows_the_days_out(ginned: Callable[..., Result], tmp_path: Path) -> None:
+    a_carded_book(ginned, tmp_path)
+    ginned("recheck", "ask", "254120700001", "--reason", "leaf", "--on", "2025-10-27")
+    output = ginned("recheck", "list", "--on", "2025-11-03").output
+    assert "254120700001" in output
+    assert "leaf" in output
+    assert "7" in output
+
+
+def test_the_chase_list_is_narrower(ginned: Callable[..., Result], tmp_path: Path) -> None:
+    a_carded_book(ginned, tmp_path)
+    ginned("recheck", "ask", "254120700001", "--reason", "leaf", "--on", "2025-10-27")
+    assert "nothing is out" in ginned("recheck", "list", "--on", "2025-11-03", "--chase").output
+    assert "254120700001" in ginned("recheck", "list", "--on", "2025-11-20", "--chase").output
+
+
+def test_a_recheck_can_be_answered_by_hand(ginned: Callable[..., Result], tmp_path: Path) -> None:
+    a_carded_book(ginned, tmp_path)
+    ginned("recheck", "ask", "254120700001", "--reason", "leaf", "--on", "2025-10-27")
+    result = ginned(
+        "recheck", "settle", "254120700001", "--outcome", "refused", "--on", "2025-11-03"
+    )
+    assert "came back refused after 7 days" in result.output
+    assert "nothing is out" in ginned("recheck", "list", "--on", "2025-11-03").output
+
+
+def test_filing_a_recheck_card_closes_it_as_changed(
+    ginned: Callable[..., Result], tmp_path: Path
+) -> None:
+    a_carded_book(ginned, tmp_path)
+    ginned("recheck", "ask", "254120700001", "--reason", "leaf", "--on", "2025-10-27")
+    second = tmp_path / "second.txt"
+    second.write_text(f"{record(1, classed='20251103', leaf='2')}\n")
+    ginned("card", "file", str(second), "--recheck")
+    output = ginned("recheck", "history", "254120700001").output
+    assert "changed" in output
+    assert "leaf 3 to 2" in output
+
+
+def test_a_bale_never_rechecked_says_so(ginned: Callable[..., Result]) -> None:
+    assert "never been rechecked" in ginned("recheck", "history", "254120700001").output
