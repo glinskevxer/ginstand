@@ -5,7 +5,15 @@ from __future__ import annotations
 import pytest
 
 from ginstand.errors import ValidationError
-from ginstand.ids import MAX_BALE_SEQUENCE, Pbi, gin_code, make_pbi, parse_pbi, reference
+from ginstand.ids import (
+    MAX_BALE_SEQUENCE,
+    Pbi,
+    bale_tag,
+    gin_code,
+    make_pbi,
+    parse_pbi,
+    reference,
+)
 
 
 @pytest.mark.parametrize(
@@ -96,3 +104,19 @@ def test_sequence_zero_is_never_issued_so_it_reads_as_a_bad_tag() -> None:
 
 def test_a_tag_is_hashable_so_it_can_key_a_lookup() -> None:
     assert len({parse_pbi("254120700061"), make_pbi(2025, "41207", 61)}) == 1
+
+
+def test_a_bale_tag_normalises_however_it_was_written() -> None:
+    for written in ("254120700061", " 254120700061 ", "25-41207-00061", "25 41207 00061"):
+        assert bale_tag(written) == "254120700061"
+
+
+def test_a_bale_tag_is_checked_before_it_is_normalised() -> None:
+    with pytest.raises(ValidationError, match="must be 12 digits"):
+        bale_tag("2541207")
+    with pytest.raises(ValidationError, match="never issued"):
+        bale_tag("254120700000")
+
+
+def test_a_normalised_tag_is_already_normal() -> None:
+    assert bale_tag(bale_tag("25-41207-00061")) == "254120700061"

@@ -18,7 +18,7 @@ from datetime import date
 from decimal import Decimal
 
 from ginstand.errors import ValidationError
-from ginstand.ids import Pbi, parse_pbi, reference
+from ginstand.ids import Pbi, bale_tag, parse_pbi, reference
 from ginstand.units.moisture import dry_weight, moisture, safe_to_store
 from ginstand.units.weight import check_pounds, net_of
 
@@ -46,8 +46,7 @@ class Bale:
     stand: str = ""
 
     def __post_init__(self) -> None:
-        parse_pbi(self.tag)
-        object.__setattr__(self, "tag", self.tag.strip().replace(" ", "").replace("-", ""))
+        object.__setattr__(self, "tag", bale_tag(self.tag))
         object.__setattr__(self, "run", reference(self.run, "gin run"))
         check_pounds(self.gross_pounds, "gross weight")
         if self.tare_pounds < MIN_TARE_POUNDS or self.tare_pounds > MAX_TARE_POUNDS:

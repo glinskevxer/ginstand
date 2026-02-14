@@ -13,7 +13,7 @@ import sqlite3
 from datetime import date
 
 from ginstand.errors import DuplicateError, NotFoundError
-from ginstand.ids import parse_pbi, reference
+from ginstand.ids import bale_tag, reference
 from ginstand.model.warehouse import Receipt, Warehouse
 from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_date, as_optional_date
@@ -103,9 +103,9 @@ class ReceiptStore(Repository[Receipt]):
 
     def for_bale(self, tag: str) -> Receipt | None:
         """The receipt against a bale, or None."""
-        parse_pbi(tag)
-        key = tag.strip().replace(" ", "").replace("-", "")
-        row = self._connection.execute("SELECT * FROM receipt WHERE tag = ?", (key,)).fetchone()
+        row = self._connection.execute(
+            "SELECT * FROM receipt WHERE tag = ?", (bale_tag(tag),)
+        ).fetchone()
         return None if row is None else _receipt_from(row)
 
     def for_holder(self, holder: str) -> tuple[Receipt, ...]:

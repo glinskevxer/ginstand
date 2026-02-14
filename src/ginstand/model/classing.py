@@ -21,7 +21,7 @@ from decimal import ROUND_HALF_UP, Decimal
 from ginstand.errors import ValidationError
 from ginstand.grades.color import ColorGrade
 from ginstand.grades.matter import Extraneous, carries_plastic, leaf_below_grade, leaf_grade
-from ginstand.ids import parse_pbi
+from ginstand.ids import bale_tag
 from ginstand.units.staple import check_staple
 
 MIN_MICRONAIRE = Decimal("2.0")
@@ -60,8 +60,7 @@ class Classing:
     remarks: str = ""
 
     def __post_init__(self) -> None:
-        parse_pbi(self.tag)
-        object.__setattr__(self, "tag", self.tag.strip().replace(" ", "").replace("-", ""))
+        object.__setattr__(self, "tag", bale_tag(self.tag))
         leaf_grade(self.leaf)
         check_staple(self.staple)
         object.__setattr__(

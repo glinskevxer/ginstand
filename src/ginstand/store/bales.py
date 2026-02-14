@@ -15,7 +15,7 @@ import sqlite3
 from datetime import date
 
 from ginstand.errors import DuplicateError
-from ginstand.ids import gin_code, parse_pbi, reference
+from ginstand.ids import bale_tag, gin_code, reference
 from ginstand.model.bale import Bale
 from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_date, as_decimal
@@ -30,7 +30,7 @@ class BaleStore(Repository[Bale]):
     order_by = "tag"
 
     def _key(self, value: str) -> str:
-        return _tag(value)
+        return bale_tag(value)
 
     def _from_row(self, row: sqlite3.Row) -> Bale:
         return _bale_from(row)
@@ -85,11 +85,6 @@ class BaleStore(Repository[Bale]):
             "SELECT max(substr(tag, 8)) AS last FROM bale WHERE tag LIKE ? || '%'", (prefix,)
         ).fetchone()
         return 0 if row["last"] is None else int(row["last"])
-
-
-def _tag(value: str) -> str:
-    parse_pbi(value)
-    return value.strip().replace(" ", "").replace("-", "")
 
 
 def _bale_from(row: sqlite3.Row) -> Bale:

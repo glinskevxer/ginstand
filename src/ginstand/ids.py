@@ -90,6 +90,18 @@ def make_pbi(crop_year: int, code: str, sequence: int) -> Pbi:
     return Pbi(crop_year=crop_year, gin_code=checked_code, sequence=sequence)
 
 
+def bale_tag(text: str) -> str:
+    """Normalise a bale tag to the twelve digits that go in the book.
+
+    Every record and every store that keys on a tag needs this, and each of them
+    had its own copy of it for a while. Two of the copies had drifted: one of
+    them checked the tag first and one of them did not, so a badly typed tag was
+    a clear message from one store and a missing row from another.
+    """
+    parse_pbi(text)
+    return text.strip().replace(" ", "").replace("-", "")
+
+
 def parse_pbi(text: str) -> Pbi:
     """Read a bale tag off a card, a receipt or a scanner.
 

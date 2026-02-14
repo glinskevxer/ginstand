@@ -19,7 +19,7 @@ from datetime import date, timedelta
 from enum import StrEnum
 
 from ginstand.errors import ValidationError
-from ginstand.ids import parse_pbi
+from ginstand.ids import bale_tag
 
 SAMPLE_HELD_DAYS = 28
 """How long the office keeps a sample after it classes it."""
@@ -66,8 +66,7 @@ class Recheck:
     recheck_id: int = 0
 
     def __post_init__(self) -> None:
-        parse_pbi(self.tag)
-        object.__setattr__(self, "tag", self.tag.strip().replace(" ", "").replace("-", ""))
+        object.__setattr__(self, "tag", bale_tag(self.tag))
         if self.settled is None and self.outcome is not RecheckOutcome.OPEN:
             raise ValidationError(
                 "outcome", f"a request that is still open cannot be {self.outcome}"

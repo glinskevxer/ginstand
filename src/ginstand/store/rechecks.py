@@ -11,7 +11,7 @@ import sqlite3
 from datetime import date
 
 from ginstand.errors import NotFoundError
-from ginstand.ids import parse_pbi
+from ginstand.ids import bale_tag
 from ginstand.model.recheck import Recheck, RecheckOutcome, RecheckReason
 from ginstand.store.sqlite import as_date, as_optional_date
 
@@ -75,14 +75,14 @@ class RecheckStore:
     def open_for(self, tag: str) -> Recheck | None:
         """The bale's open request, or None."""
         row = self._connection.execute(
-            "SELECT * FROM recheck WHERE tag = ? AND settled IS NULL", (_tag(tag),)
+            "SELECT * FROM recheck WHERE tag = ? AND settled IS NULL", (bale_tag(tag),)
         ).fetchone()
         return None if row is None else _recheck_from(row)
 
     def history_for(self, tag: str) -> tuple[Recheck, ...]:
         """Every request ever made against a bale, oldest first."""
         rows = self._connection.execute(
-            "SELECT * FROM recheck WHERE tag = ? ORDER BY requested, id", (_tag(tag),)
+            "SELECT * FROM recheck WHERE tag = ? ORDER BY requested, id", (bale_tag(tag),)
         ).fetchall()
         return tuple(_recheck_from(row) for row in rows)
 
@@ -106,11 +106,6 @@ class RecheckStore:
         """How many requests the book holds."""
         row = self._connection.execute("SELECT count(*) AS n FROM recheck").fetchone()
         return int(row["n"])
-
-
-def _tag(value: str) -> str:
-    parse_pbi(value)
-    return value.strip().replace(" ", "").replace("-", "")
 
 
 def _recheck_from(row: sqlite3.Row) -> Recheck:

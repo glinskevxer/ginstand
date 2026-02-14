@@ -18,7 +18,7 @@ from datetime import date
 from decimal import Decimal
 
 from ginstand.errors import DuplicateError, NotFoundError
-from ginstand.ids import parse_pbi, reference
+from ginstand.ids import bale_tag, reference
 from ginstand.store.sqlite import as_decimal
 
 
@@ -30,7 +30,7 @@ class AllocationStore:
 
     def assign(self, tag: str, producer: str, run: str, on: date) -> None:
         """Give a bale to a producer. Raises if it already has an owner."""
-        key = _tag(tag)
+        key = bale_tag(tag)
         owner = self.owner_of(key)
         if owner is not None:
             raise DuplicateError("bale allocation", key)
@@ -42,7 +42,7 @@ class AllocationStore:
     def owner_of(self, tag: str) -> str | None:
         """Which producer owns a bale, or None if it is not allocated yet."""
         row = self._connection.execute(
-            "SELECT producer FROM bale_allocation WHERE tag = ?", (_tag(tag),)
+            "SELECT producer FROM bale_allocation WHERE tag = ?", (bale_tag(tag),)
         ).fetchone()
         return None if row is None else str(row["producer"])
 
@@ -50,7 +50,7 @@ class AllocationStore:
         """Which producer owns a bale. Raises if it is not allocated."""
         owner = self.owner_of(tag)
         if owner is None:
-            raise NotFoundError("bale allocation", _tag(tag))
+            raise NotFoundError("bale allocation", bale_tag(tag))
         return owner
 
     def bales_for(self, producer: str) -> tuple[str, ...]:
@@ -108,8 +108,3 @@ class AllocationStore:
             (crop_year,),
         ).fetchall()
         return {str(row["producer"]): as_decimal(row["carry"]) for row in rows}
-
-
-def _tag(value: str) -> str:
-    parse_pbi(value)
-    return value.strip().replace(" ", "").replace("-", "")

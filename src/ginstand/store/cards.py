@@ -17,7 +17,7 @@ import sqlite3
 from ginstand.errors import DuplicateError, NotFoundError
 from ginstand.grades.color import ColorGrade
 from ginstand.grades.matter import Extraneous, parse_extraneous
-from ginstand.ids import parse_pbi
+from ginstand.ids import bale_tag
 from ginstand.model.classing import Classing
 from ginstand.store.repository import Repository
 from ginstand.store.sqlite import as_date, as_decimal
@@ -32,7 +32,7 @@ class CardStore(Repository[Classing]):
     order_by = "tag"
 
     def _key(self, value: str) -> str:
-        return _tag(value)
+        return bale_tag(value)
 
     def _from_row(self, row: sqlite3.Row) -> Classing:
         return _card_from(row)
@@ -101,11 +101,6 @@ class CardStore(Repository[Classing]):
             " WHERE c.tag IS NULL ORDER BY b.tag"
         ).fetchall()
         return tuple(str(row["tag"]) for row in rows)
-
-
-def _tag(value: str) -> str:
-    parse_pbi(value)
-    return value.strip().replace(" ", "").replace("-", "")
 
 
 def _notes(text: str) -> tuple[Extraneous, ...]:

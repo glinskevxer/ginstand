@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from ginstand.errors import ValidationError
-from ginstand.ids import parse_pbi, reference
+from ginstand.ids import bale_tag, reference
 
 
 @dataclass(frozen=True, slots=True)
@@ -58,8 +58,7 @@ class Receipt:
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "number", reference(self.number, "receipt number"))
-        parse_pbi(self.tag)
-        object.__setattr__(self, "tag", self.tag.strip().replace(" ", "").replace("-", ""))
+        object.__setattr__(self, "tag", bale_tag(self.tag))
         object.__setattr__(self, "warehouse", reference(self.warehouse, "warehouse"))
         object.__setattr__(self, "holder", reference(self.holder, "holder"))
         if self.released is not None and self.released < self.issued:
