@@ -110,3 +110,34 @@ def test_the_gap_between_columns_can_be_widened() -> None:
 def test_the_block_form_joins_the_lines() -> None:
     table = Table(columns=COLUMNS, rows=(("M-1", "A", "1"),))
     assert table.text() == "\n".join(table.render())
+
+
+def test_a_table_with_no_rows_drops_its_footers() -> None:
+    table = Table(columns=COLUMNS, footers=(("", "total", "0"),))
+    assert table.shown_footers == ()
+    lines = table.render()
+    assert lines[-1] == "nothing to show"
+    assert "total" not in "\n".join(lines)
+
+
+def test_a_table_with_rows_keeps_its_footers() -> None:
+    table = Table(columns=COLUMNS, rows=(("M-1", "A", "1"),), footers=(("", "total", "1"),))
+    assert table.shown_footers == (("", "total", "1"),)
+    assert "total" in table.text()
+
+
+def test_a_dropped_footer_does_not_widen_the_header() -> None:
+    table = Table(columns=(Column("n"),), footers=(("a very long total",),))
+    assert table.widths() == (1,)
+    assert table.render()[0] == "n"
+
+
+def test_an_empty_report_prints_only_its_note() -> None:
+    """Every report builds its footers unconditionally now, so this is the guard."""
+    table = Table(
+        columns=COLUMNS,
+        footers=(("", "total", "0"),),
+        empty_note="the yard is empty",
+    )
+    lines = table.render()
+    assert lines == ("tag  producer  pounds", "---  --------  ------", "the yard is empty")

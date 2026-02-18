@@ -136,3 +136,13 @@ def test_the_producer_table_splits_what_each_one_put_in(book: Book) -> None:
 
 def test_a_crop_year_nobody_ginned_says_so(book: Book) -> None:
     assert by_producer(book, 2019).render()[-1] == "nobody ginned in this crop year"
+
+
+def test_an_empty_run_table_prints_no_totals(book: Book) -> None:
+    lines = by_run(book, 2019).render()
+    assert lines[-1] == "no runs in this crop year"
+
+
+def test_an_empty_producer_table_prints_no_totals(book: Book) -> None:
+    lines = by_producer(book, 2019).render()
+    assert lines[-1] == "nobody ginned in this crop year"

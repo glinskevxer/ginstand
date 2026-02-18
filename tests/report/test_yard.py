@@ -93,3 +93,17 @@ def test_the_hold_list_names_who_placed_it_and_for_how_long(book: Book) -> None:
     assert "weight" in text
     assert "R Ellis" in text
     assert "10" in text
+
+
+def test_an_empty_standing_prints_no_total_line(book: Book) -> None:
+    lines = standing(book, TODAY).render()
+    assert lines[-1] == "the yard is empty"
+    assert not any("lb" in line for line in lines)
+
+
+def test_an_empty_queue_prints_no_footer(book: Book) -> None:
+    assert ginning_queue(book, TODAY).render()[-1] == "nothing is free to gin"
+
+
+def test_an_empty_hold_list_prints_no_footer(book: Book) -> None:
+    assert holds(book, TODAY).render()[-1] == "nothing is held"

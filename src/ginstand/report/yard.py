@@ -46,7 +46,7 @@ def standing(book: Book, on: date) -> Table:
             Column("note"),
         ),
         rows=tuple(rows),
-        footers=(("", "", "", "", format_pounds(total), "", ""),) if rows else (),
+        footers=(("", "", "", "", format_pounds(total), "", ""),),
         empty_note="the yard is empty",
     )
 

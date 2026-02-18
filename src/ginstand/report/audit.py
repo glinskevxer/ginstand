@@ -179,9 +179,7 @@ def audit_table(book: Book, on: date) -> Table:
                 f"{sum(1 for n in notes if n.severity is Severity.FAULT)} faults, "
                 f"{sum(1 for n in notes if n.severity is Severity.QUERY)} queries",
             ),
-        )
-        if notes
-        else (),
+        ),
         empty_note="the book is consistent",
     )
 

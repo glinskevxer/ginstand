@@ -66,14 +66,22 @@ class Table:
                     f"{len(self.columns)} columns",
                 )
 
+    @property
+    def shown_footers(self) -> tuple[tuple[str, ...], ...]:
+        """The footers that will actually print.
+
+        A table with no rows prints its empty note and stops, so its footers are
+        never seen. They are dropped here rather than at every caller, which is
+        where the same three words were written twelve times.
+        """
+        return self.footers if self.rows else ()
+
     def widths(self) -> tuple[int, ...]:
-        """How wide each column has to be for its header and every cell."""
+        """How wide each column has to be for its header and every printed cell."""
+        body = self.rows + self.shown_footers
         return tuple(
-            max(
-                len(column.header),
-                *(len(row[index]) for row in self.rows + self.footers),
-            )
-            if self.rows or self.footers
+            max(len(column.header), *(len(row[index]) for row in body))
+            if body
             else len(column.header)
             for index, column in enumerate(self.columns)
         )
@@ -96,9 +104,9 @@ class Table:
             lines.append(self.empty_note)
             return tuple(lines)
         lines.extend(self._body(self.rows, widths))
-        if self.footers:
+        if self.shown_footers:
             lines.append(self.gap.join("-" * width for width in widths))
-            lines.extend(self._body(self.footers, widths))
+            lines.extend(self._body(self.shown_footers, widths))
         return tuple(lines)
 
     def _body(self, rows: Sequence[tuple[str, ...]], widths: tuple[int, ...]) -> list[str]:

@@ -133,3 +133,9 @@ def test_the_table_counts_both_kinds(book: Book) -> None:
 def test_a_note_prints_as_one_line(book: Book) -> None:
     gin(book, allocate_it=False)
     assert faults(book, TODAY)[0].line.startswith("fault  GR-1")
+
+
+def test_a_consistent_book_prints_no_counts(book: Book) -> None:
+    lines = audit_table(book, TODAY).render()
+    assert lines[-1] == "the book is consistent"
+    assert not any("faults" in line for line in lines)

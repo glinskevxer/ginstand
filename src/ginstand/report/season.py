@@ -117,9 +117,10 @@ def by_run(book: Book, crop_year: int) -> Table:
                 str(proportion(lint, seed_cotton)) if seed_cotton else "",
             )
         )
-    season = totals(book, crop_year) if rows else None
-    footers = (
-        (
+    footers: tuple[tuple[str, ...], ...] = ()
+    if rows:
+        season = totals(book, crop_year)
+        footers = (
             (
                 "",
                 "",
@@ -131,9 +132,6 @@ def by_run(book: Book, crop_year: int) -> Table:
                 str(season.lint_turnout) if season.seed_cotton_pounds else "",
             ),
         )
-        if season is not None
-        else ()
-    )
     return Table(
         title=f"Runs in crop year {crop_year}",
         columns=(

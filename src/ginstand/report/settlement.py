@@ -81,7 +81,7 @@ def register(
             Column("note"),
         ),
         rows=tuple(rows),
-        footers=(totals,) if rows else (),
+        footers=(totals,),
         empty_note="nobody has cotton on this run",
     )
 

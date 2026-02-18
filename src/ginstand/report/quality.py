@@ -107,7 +107,7 @@ def colour_spread(book: Book, crop_year: int) -> Table:
             Column("share", Align.RIGHT),
         ),
         rows=tuple(rows),
-        footers=(("", "", str(total), "100.0%"),) if rows else (),
+        footers=(("", "", str(total), "100.0%"),),
         empty_note="nothing has been classed",
     )
 
@@ -130,7 +130,7 @@ def staple_spread(book: Book, crop_year: int) -> Table:
         title=f"Staple, crop year {crop_year}",
         columns=(Column("staple"), Column("bales", Align.RIGHT), Column("share", Align.RIGHT)),
         rows=tuple(rows),
-        footers=(("", str(total), "100.0%"),) if rows else (),
+        footers=(("", str(total), "100.0%"),),
         empty_note="nothing has been classed",
     )
 
@@ -179,7 +179,7 @@ def contamination(book: Book, crop_year: int) -> Table:
         title=f"Extraneous matter, crop year {crop_year}",
         columns=(Column("code"), Column("bales", Align.RIGHT)),
         rows=tuple(rows),
-        footers=(("plastic", str(plastic)),) if rows else (),
+        footers=(("plastic", str(plastic)),),
         empty_note="no extraneous matter was noted",
     )
 

@@ -47,7 +47,7 @@ def feed_sheet(book: Book, run_ref: str) -> Table:
             Column("moisture", Align.RIGHT),
         ),
         rows=tuple(rows),
-        footers=(("", "", "", format_pounds(total), ""),) if rows else (),
+        footers=(("", "", "", format_pounds(total), ""),),
         empty_note="nothing has been fed into this run",
     )
 
@@ -81,7 +81,7 @@ def bale_sheet(book: Book, run_ref: str) -> Table:
             Column("classing"),
         ),
         rows=tuple(rows),
-        footers=(("", "", format_pounds(total), "", "", ""),) if rows else (),
+        footers=(("", "", format_pounds(total), "", "", ""),),
         empty_note="no bales have come off this run",
     )
 

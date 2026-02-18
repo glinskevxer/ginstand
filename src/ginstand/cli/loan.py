@@ -198,7 +198,7 @@ def loan_register(ctx: click.Context, crop_year: int) -> None:
                 Column("value", Align.RIGHT),
             ),
             rows=tuple(rows),
-            footers=(("", "", "", "", "", format_money(total)),) if rows else (),
+            footers=(("", "", "", "", "", format_money(total)),),
             empty_note="nothing has been classed in this crop year",
         ).render()
 

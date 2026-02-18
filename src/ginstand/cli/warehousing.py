@@ -220,7 +220,7 @@ def receipt_storage(ctx: click.Context, who: str, on: date, crop_year: int) -> N
                 Column("amount", Align.RIGHT),
             ),
             rows=rows,
-            footers=(("", "", "", "", format_money(total)),) if rows else (),
+            footers=(("", "", "", "", format_money(total)),),
             empty_note="nothing in store",
         ).render()
 

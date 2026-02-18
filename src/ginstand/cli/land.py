@@ -158,7 +158,7 @@ def field_list(ctx: click.Context, farm_ref: str) -> None:
                 Column("irrigated"),
             ),
             rows=rows,
-            footers=(("", "", "", str(total), "", "", ""),) if rows else (),
+            footers=(("", "", "", str(total), "", "", ""),),
             empty_note="no fields yet",
         ).render()
 
