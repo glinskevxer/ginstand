@@ -193,3 +193,23 @@ def test_a_closed_run_with_no_allocation_shows_as_a_fault(
     gin("run", "close", "GR-1", "--on", "2025-10-14")
     output = gin("report", "audit", "--on", "2025-10-20", "--faults-only").output
     assert "no allocation" in output
+
+
+def test_the_recheck_report_says_when_nothing_has_been_asked(
+    season: Callable[..., Result],
+) -> None:
+    output = season("report", "rechecks", "--on", "2025-11-03").output
+    assert "no rechecks have been asked for" in output
+    assert "days on average" not in output
+
+
+def test_the_recheck_report_counts_the_outcomes(
+    season: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(season, tmp_path)
+    season("recheck", "ask", "254120700001", "--reason", "leaf", "--on", "2025-10-27")
+    season("recheck", "settle", "254120700001", "--outcome", "changed", "--on", "2025-11-03")
+    output = season("report", "rechecks", "--on", "2025-11-03").output
+    assert "Recheck outcomes" in output
+    assert "leaf" in output
+    assert "days on average" in output

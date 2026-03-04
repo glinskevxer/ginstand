@@ -9,6 +9,7 @@ import click
 from ginstand.cli.common import DATE, context, run_command
 from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
+from ginstand.report.recheck import overall, rate_table, turnaround
 
 
 @click.group()
@@ -99,6 +100,23 @@ def report_audit(ctx: click.Context, on: date, faults_only: bool) -> None:
                 return ("no faults",)
             return tuple(note.line for note in found)
         return audit_table(holder.book, on).render()
+
+    run_command(work)
+
+
+@report.command("rechecks")
+@click.option("--on", type=DATE, required=True, help="the day to work turnaround to")
+@click.pass_context
+def report_rechecks(ctx: click.Context, on: date) -> None:
+    """How the rechecks the gin asked for turned out."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        lines = list(rate_table(holder.book).render())
+        rate = overall(holder.book)
+        if rate.answered:
+            lines.extend(("", f"the office took {turnaround(holder.book, on)} days on average"))
+        return tuple(lines)
 
     run_command(work)
 

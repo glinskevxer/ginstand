@@ -674,6 +674,16 @@ ginstand report audit
 - `--on` — the day to audit at (required)
 - `--faults-only` — leave out the queries
 
+### report rechecks
+
+How the rechecks the gin asked for turned out.
+
+```
+ginstand report rechecks
+```
+
+- `--on` — the day to work turnaround to (required)
+
 ### report book
 
 What the whole book holds, one line per register.
