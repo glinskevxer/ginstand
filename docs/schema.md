@@ -1,6 +1,6 @@
 # The book
 
-Schema version 8, built by 8 migrations.
+Schema version 9, built by 9 migrations.
 
 This file is generated. Run `python -m ginstand.tools.schema_dump` after
 adding a migration, and CI will tell you if you forgot.
@@ -15,8 +15,29 @@ adding a migration, and CI will tell you if you forgot.
 6. cottonseed loads off a run
 7. warehouses and the receipts they issue
 8. recheck requests against a classing card
+9. the producer account ledger
 
 ## Tables
+
+### account_entry
+
+```sql
+CREATE TABLE account_entry (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    producer TEXT NOT NULL REFERENCES producer(ref),
+    crop_year INTEGER NOT NULL,
+    made TEXT NOT NULL,
+    kind TEXT NOT NULL,
+    amount INTEGER NOT NULL,
+    run TEXT REFERENCES gin_run(ref),
+    reference TEXT NOT NULL DEFAULT '',
+    note TEXT NOT NULL DEFAULT ''
+)
+```
+
+- `CREATE INDEX account_entry_by_producer ON account_entry(producer, crop_year, made)`
+
+- `CREATE UNIQUE INDEX account_entry_one_settlement ON account_entry(producer, run) WHERE kind = 'settlement'`
 
 ### allocation_carry
 

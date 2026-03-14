@@ -269,6 +269,28 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE UNIQUE INDEX recheck_one_open ON recheck(tag) WHERE settled IS NULL",
         ),
     ),
+    Migration(
+        version=9,
+        name="the producer account ledger",
+        statements=(
+            """
+            CREATE TABLE account_entry (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                producer    TEXT NOT NULL REFERENCES producer(ref),
+                crop_year   INTEGER NOT NULL,
+                made        TEXT NOT NULL,
+                kind        TEXT NOT NULL,
+                amount      INTEGER NOT NULL,
+                run         TEXT REFERENCES gin_run(ref),
+                reference   TEXT NOT NULL DEFAULT '',
+                note        TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX account_entry_by_producer ON account_entry(producer, crop_year, made)",
+            "CREATE UNIQUE INDEX account_entry_one_settlement"
+            " ON account_entry(producer, run) WHERE kind = 'settlement'",
+        ),
+    ),
 )
 
 

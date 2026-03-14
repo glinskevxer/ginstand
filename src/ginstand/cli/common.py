@@ -22,6 +22,7 @@ import click
 from ginstand.errors import GinstandError
 from ginstand.season import parse_date
 from ginstand.store.book import Book
+from ginstand.units.money import Money, parse_money
 
 
 @dataclass
@@ -78,6 +79,11 @@ def echo_lines(lines: Iterable[str]) -> None:
     """Print a report's lines."""
     for line in lines:
         click.echo(line)
+
+
+def parse_amount(text: str) -> Money:
+    """Read a money amount typed on the command line."""
+    return parse_money(text)
 
 
 def run_command(work: Callable[[], Iterable[str]]) -> None:

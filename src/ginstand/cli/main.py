@@ -105,6 +105,7 @@ def _register() -> None:
     cli.add_command(warehousing.warehouse)
     cli.add_command(warehousing.receipt)
     cli.add_command(settling.settle)
+    cli.add_command(settling.account)
     cli.add_command(reports.report)
 
 

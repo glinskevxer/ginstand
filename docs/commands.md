@@ -616,6 +616,66 @@ ginstand settle tariff
 
 - `--crop-year` — which year's rates (required)
 
+## account
+
+The producer account: settlements, adjustments and payments.
+
+### account post
+
+Agree a statement and put it on the producer's account.
+
+```
+ginstand account post <run_ref> <producer>
+```
+
+- `--on` — the day the settlement is agreed (required)
+- `--extra` — an optional charge code to bill
+
+### account adjust
+
+Put a correction on a producer's account.
+
+```
+ginstand account adjust <producer> <amount>
+```
+
+- `--crop-year` — which crop year (required)
+- `--on` — the day the correction is made (required)
+- `--reason` — why the account is being corrected (required)
+- `--run` — the run it relates to, if any
+
+### account pay
+
+Record money paid out to a producer.
+
+```
+ginstand account pay <producer> <amount>
+```
+
+- `--crop-year` — which crop year (required)
+- `--on` — the day the money went out (required)
+- `--reference` — the cheque or transfer reference
+
+### account show
+
+One producer's account for a crop year.
+
+```
+ginstand account show <producer>
+```
+
+- `--crop-year` — which crop year (required)
+
+### account owing
+
+Every producer with a balance, most owed first.
+
+```
+ginstand account owing
+```
+
+- `--crop-year` — which crop year (required)
+
 ## report
 
 The reports the office runs.
