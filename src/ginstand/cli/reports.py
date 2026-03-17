@@ -9,6 +9,7 @@ import click
 from ginstand.cli.common import DATE, context, run_command
 from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
+from ginstand.report.field import yield_table
 from ginstand.report.recheck import overall, rate_table, turnaround
 
 
@@ -102,6 +103,15 @@ def report_audit(ctx: click.Context, on: date, faults_only: bool) -> None:
         return audit_table(holder.book, on).render()
 
     run_command(work)
+
+
+@report.command("fields")
+@click.option("--crop-year", type=int, required=True, help="which crop year")
+@click.pass_context
+def report_fields(ctx: click.Context, crop_year: int) -> None:
+    """What each field yielded, best first."""
+    holder = context(ctx)
+    run_command(lambda: yield_table(holder.book, crop_year).render())
 
 
 @report.command("rechecks")

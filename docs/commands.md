@@ -736,6 +736,16 @@ ginstand report audit
 - `--on` — the day to audit at (required)
 - `--faults-only` — leave out the queries
 
+### report fields
+
+What each field yielded, best first.
+
+```
+ginstand report fields
+```
+
+- `--crop-year` — which crop year (required)
+
 ### report rechecks
 
 How the rechecks the gin asked for turned out.
