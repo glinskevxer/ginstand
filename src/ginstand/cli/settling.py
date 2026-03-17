@@ -195,7 +195,11 @@ def account_post(
 
 @account.command("adjust")
 @click.argument("producer")
-@click.argument("amount")
+@click.option(
+    "--amount",
+    required=True,
+    help="what to move the balance by, negative where the producer owes it",
+)
 @click.option("--crop-year", type=int, required=True, help="which crop year")
 @click.option("--on", type=DATE, required=True, help="the day the correction is made")
 @click.option("--reason", required=True, help="why the account is being corrected")
@@ -226,7 +230,7 @@ def account_adjust(
 
 @account.command("pay")
 @click.argument("producer")
-@click.argument("amount")
+@click.option("--amount", required=True, help="what went out, as the cheque reads")
 @click.option("--crop-year", type=int, required=True, help="which crop year")
 @click.option("--on", type=DATE, required=True, help="the day the money went out")
 @click.option("--reference", default="", help="the cheque or transfer reference")

@@ -155,3 +155,139 @@ def test_a_crop_year_with_no_tariff_is_refused(settled: Callable[..., Result]) -
     result = settled("settle", "tariff", "--crop-year", "2019")
     assert result.exit_code != 0
     assert "no ginning tariff is published" in result.output
+
+
+def test_the_account_is_empty_until_something_is_posted(
+    settled: Callable[..., Result],
+) -> None:
+    output = settled("account", "show", "P-12", "--crop-year", "2025").output
+    assert "nothing has been posted to this account" in output
+
+
+def test_a_provisional_statement_cannot_be_posted(
+    settled: Callable[..., Result],
+) -> None:
+    result = settled("account", "post", "GR-1", "P-12", "--on", "2025-11-03")
+    assert result.exit_code != 0
+    assert "is provisional" in result.output
+
+
+def test_posting_a_settlement_moves_the_balance(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(settled, tmp_path)
+    result = settled("account", "post", "GR-1", "P-12", "--on", "2025-11-03")
+    assert result.exit_code == 0
+    assert "posted" in result.output
+    assert "balance" in result.output
+
+
+def test_posting_the_same_run_twice_is_refused(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(settled, tmp_path)
+    settled("account", "post", "GR-1", "P-12", "--on", "2025-11-03")
+    again = settled("account", "post", "GR-1", "P-12", "--on", "2025-11-04")
+    assert again.exit_code != 0
+    assert "was already settled for GR-1" in again.output
+
+
+def an_adjustment(settled: Callable[..., Result], amount: str = "-40.00") -> Result:
+    return settled(
+        "account",
+        "adjust",
+        "P-12",
+        "--amount",
+        amount,
+        "--crop-year",
+        "2025",
+        "--on",
+        "2025-11-10",
+        "--reason",
+        "module weight corrected",
+    )
+
+
+def a_payment(settled: Callable[..., Result], amount: str = "100.00") -> Result:
+    return settled(
+        "account",
+        "pay",
+        "P-12",
+        "--amount",
+        amount,
+        "--crop-year",
+        "2025",
+        "--on",
+        "2025-11-12",
+        "--reference",
+        "CHQ-4471",
+    )
+
+
+def test_an_adjustment_moves_the_balance(settled: Callable[..., Result], tmp_path: Path) -> None:
+    class_all(settled, tmp_path)
+    settled("account", "post", "GR-1", "P-12", "--on", "2025-11-03")
+    result = an_adjustment(settled)
+    assert result.exit_code == 0
+    assert "module weight corrected" in result.output
+    assert "-$40.00" in result.output
+
+
+def test_a_payment_is_typed_the_way_the_cheque_reads(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(settled, tmp_path)
+    settled("account", "post", "GR-1", "P-12", "--on", "2025-11-03")
+    result = a_payment(settled)
+    assert result.exit_code == 0
+    assert "paid $100.00 to P-12" in result.output
+
+
+def test_a_payment_over_the_balance_is_refused(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(settled, tmp_path)
+    settled("account", "post", "GR-1", "P-12", "--on", "2025-11-03")
+    result = a_payment(settled, "999999.00")
+    assert result.exit_code != 0
+    assert "is owed" in result.output
+
+
+def test_an_amount_that_is_not_a_number_is_refused(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(settled, tmp_path)
+    result = an_adjustment(settled, "lots")
+    assert result.exit_code != 0
+    assert "is not an amount" in result.output
+
+
+def test_the_account_shows_every_entry_with_a_balance(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(settled, tmp_path)
+    settled("account", "post", "GR-1", "P-12", "--on", "2025-11-03")
+    an_adjustment(settled)
+    a_payment(settled)
+    output = settled("account", "show", "P-12", "--crop-year", "2025").output
+    assert "settlement" in output
+    assert "adjustment" in output
+    assert "payment" in output
+    assert "balance" in output
+
+
+def test_the_owing_list_names_the_producers_still_owed(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(settled, tmp_path)
+    settled("account", "post", "GR-1", "P-12", "--on", "2025-11-03")
+    settled("account", "post", "GR-1", "P-40", "--on", "2025-11-03")
+    output = settled("account", "owing", "--crop-year", "2025").output
+    assert "Aldys Brothers" in output
+    assert "Merrick Land Co" in output
+
+
+def test_a_crop_year_with_no_accounts_is_square(
+    settled: Callable[..., Result],
+) -> None:
+    assert "every account is square" in settled("account", "owing", "--crop-year", "2026").output

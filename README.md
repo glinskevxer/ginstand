@@ -53,7 +53,7 @@ fails if they go stale.
 | `loan` | the published premium and discount tables, and what a bale is worth |
 | `charges` | the ginning tariff and what a share of a run costs |
 | `warehouse` | receipts and storage |
-| `settle` | producer statements and the lease split |
+| `settle` | producer statements, the lease split, and the account ledger |
 | `report` | the reports the office runs |
 | `cli` | the command line |
 | `tools` | the checks CI runs against this package |
@@ -83,6 +83,11 @@ moves their share.
 **The yard queue is age multiplied by moisture above the safe line.** Neither
 number on its own gives an order the gin manager agrees with: a dry module can
 sit for a month and a wet one cannot sit for a week.
+
+**A statement is worked out and agreed in two steps.** Printing one does not
+put it on the producer's account, because a figure gets queried before it gets
+agreed, and a producer querying a number they have already been credited with is
+a harder conversation than one they have not.
 
 **Nothing reads the wall clock.** Every operation that needs to know what day it
 is takes the day as an argument, which is what makes a settlement reproducible a

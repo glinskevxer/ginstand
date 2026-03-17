@@ -636,9 +636,10 @@ ginstand account post <run_ref> <producer>
 Put a correction on a producer's account.
 
 ```
-ginstand account adjust <producer> <amount>
+ginstand account adjust <producer>
 ```
 
+- `--amount` — what to move the balance by, negative where the producer owes it (required)
 - `--crop-year` — which crop year (required)
 - `--on` — the day the correction is made (required)
 - `--reason` — why the account is being corrected (required)
@@ -649,9 +650,10 @@ ginstand account adjust <producer> <amount>
 Record money paid out to a producer.
 
 ```
-ginstand account pay <producer> <amount>
+ginstand account pay <producer>
 ```
 
+- `--amount` — what went out, as the cheque reads (required)
 - `--crop-year` — which crop year (required)
 - `--on` — the day the money went out (required)
 - `--reference` — the cheque or transfer reference
