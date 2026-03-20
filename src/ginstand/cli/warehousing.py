@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 import click
 
@@ -11,6 +12,7 @@ from ginstand.cli.common import DATE, context, run_command
 from ginstand.model.warehouse import Warehouse
 from ginstand.report.table import Align, Column, Table
 from ginstand.units.money import Money, format_money
+from ginstand.warehouse.ewr import build
 from ginstand.warehouse.receipts import issue, release, transfer
 from ginstand.warehouse.storage import bill_holder
 
@@ -223,5 +225,29 @@ def receipt_storage(ctx: click.Context, who: str, on: date, crop_year: int) -> N
             footers=(("", "", "", "", format_money(total)),),
             empty_note="nothing in store",
         ).render()
+
+    run_command(work)
+
+
+@receipt.command("export")
+@click.argument("house")
+@click.option("--on", type=DATE, required=True, help="the day the file is made up")
+@click.option(
+    "--out",
+    type=click.Path(dir_okay=False, path_type=Path),
+    default=None,
+    help="write the file here instead of printing it",
+)
+@click.pass_context
+def receipt_export(ctx: click.Context, house: str, on: date, out: Path | None) -> None:
+    """Make up the receipt file for a warehouse."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        lines = build(holder.book, house, on)
+        if out is None:
+            return lines
+        out.write_text("\n".join(lines) + "\n")
+        return (f"wrote {len(lines) - 2} records to {out}",)
 
     run_command(work)

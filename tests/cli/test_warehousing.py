@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
 import pytest
 from click.testing import Result
@@ -179,3 +180,27 @@ def test_somebody_with_nothing_in_store_owes_nothing(
         "receipt", "storage", "P-40", "--on", "2026-01-30", "--crop-year", "2025"
     ).output
     assert "nothing in store" in output
+
+
+def test_the_receipt_file_prints(stored: Callable[..., Result]) -> None:
+    stored("receipt", "issue", "254120700001", "--warehouse", "WH-1", "--on", "2025-10-30")
+    output = stored("receipt", "export", "WH-1", "--on", "2025-10-30").output
+    assert output.startswith("H41-207")
+    assert "D254120700001" in output
+    assert "T00001" in output
+
+
+def test_the_receipt_file_can_be_written_out(stored: Callable[..., Result], tmp_path: Path) -> None:
+    stored("receipt", "issue", "254120700001", "--warehouse", "WH-1", "--on", "2025-10-30")
+    out = tmp_path / "ewr.txt"
+    result = stored("receipt", "export", "WH-1", "--on", "2025-10-30", "--out", str(out))
+    assert result.exit_code == 0
+    assert "wrote 1 records" in result.output
+    assert out.read_text().startswith("H41-207")
+
+
+def test_an_unlicensed_warehouse_cannot_export(stored: Callable[..., Result]) -> None:
+    stored("warehouse", "add", "WH-2", "Gin yard shed")
+    result = stored("receipt", "export", "WH-2", "--on", "2025-10-30")
+    assert result.exit_code != 0
+    assert "no licensed code" in result.output

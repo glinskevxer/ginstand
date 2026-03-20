@@ -563,6 +563,17 @@ ginstand receipt storage <who>
 - `--on` — the day to bill up to (required)
 - `--crop-year` — which contract applies (required)
 
+### receipt export
+
+Make up the receipt file for a warehouse.
+
+```
+ginstand receipt export <house>
+```
+
+- `--on` — the day the file is made up (required)
+- `--out` — write the file here instead of printing it
+
 ## settle
 
 Settlement.
