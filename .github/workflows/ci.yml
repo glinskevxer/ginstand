@@ -38,6 +38,7 @@ jobs:
       - run: python -m ginstand.tools.build_glossary --check
       - run: python -m ginstand.tools.check_readme
       - run: python -m ginstand.tools.release_check
+      - run: python -m ginstand.tools.check_package
 
   tests:
     runs-on: ubuntu-latest
