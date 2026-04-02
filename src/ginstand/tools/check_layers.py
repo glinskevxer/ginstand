@@ -10,7 +10,8 @@ The layers, lowest first:
 1. scalars and identifiers, which know nothing about cotton
 2. the grade vocabulary and the records
 3. the book
-4. the rules: yard, ginning, classing, loan, charges, warehouse, settle
+4. the rules: yard, ginning, classing, loan, charges, warehouse, quality,
+   settle
 5. the reports
 6. the command line
 7. these checks
@@ -42,6 +43,7 @@ LAYERS: dict[str, int] = {
     "charges": 4,
     "warehouse": 4,
     "settle": 4,
+    "quality": 4,
     "report": 5,
     "cli": 6,
     "tools": 7,

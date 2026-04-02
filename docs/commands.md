@@ -338,6 +338,24 @@ Which run is open, if any.
 ginstand run current
 ```
 
+### run weights
+
+A run's bale weight control, and the bales worth looking at.
+
+```
+ginstand run weights <ref>
+```
+
+### run press-control
+
+Every run's bale weight control for a crop year, worst first.
+
+```
+ginstand run press-control
+```
+
+- `--crop-year` — which crop year (required)
+
 ## card
 
 Classing cards.

@@ -13,6 +13,7 @@ from ginstand.ginning.press import press
 from ginstand.ginning.restore import highest_allowed
 from ginstand.ginning.run import close_run, current_run, feed, open_run
 from ginstand.ginning.seed import record_load, seed_pounds
+from ginstand.quality.tolerance import control_for, outliers_in, season_control
 from ginstand.report.run import allocation_sheet, bale_sheet, feed_sheet, run_sheet
 from ginstand.units.weight import format_pounds
 from ginstand.yard.order import queue
@@ -234,5 +235,41 @@ def run_current(ctx: click.Context) -> None:
         fed = len(holder.book.runs.modules_in(open_now.ref))
         pressed = holder.book.bales.count_for_run(open_now.ref)
         return [f"{open_now.ref} opened {open_now.opened}, {fed} modules, {pressed} bales"]
+
+    run_command(work)
+
+
+@run.command("weights")
+@click.argument("ref")
+@click.pass_context
+def run_weights(ctx: click.Context, ref: str) -> None:
+    """A run's bale weight control, and the bales worth looking at."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        control = control_for(holder.book, ref)
+        lines = [
+            control.line,
+            f"  measured against {control.basis} lb",
+        ]
+        for tag, weight, off in outliers_in(holder.book, ref):
+            lines.append(f"  {tag}  {weight} lb  {off:+} off the run")
+        return lines
+
+    run_command(work)
+
+
+@run.command("press-control")
+@click.option("--crop-year", type=int, required=True, help="which crop year")
+@click.pass_context
+def run_press_control(ctx: click.Context, crop_year: int) -> None:
+    """Every run's bale weight control for a crop year, worst first."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        found = season_control(holder.book, crop_year)
+        if not found:
+            return ("no run in this crop year has pressed a bale",)
+        return tuple(item.line for item in found)
 
     run_command(work)

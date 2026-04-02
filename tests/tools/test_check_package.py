@@ -28,6 +28,7 @@ def test_the_subpackages_are_the_ones_the_readme_lists() -> None:
         "loan",
         "charges",
         "warehouse",
+        "quality",
         "settle",
         "report",
         "cli",

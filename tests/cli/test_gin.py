@@ -219,3 +219,30 @@ def test_pressing_nothing_says_so(gin_yard: Callable[..., Result]) -> None:
     gin_yard("run", "open", "GR-1", "--gin-code", "41207", "--on", "2025-10-14")
     gin_yard("run", "feed", "GR-1", "M-1", "--on", "2025-10-14")
     assert "nothing to press" in press_some(gin_yard, 0).output
+
+
+def test_the_weights_command_reads_the_run(gin_yard: Callable[..., Result]) -> None:
+    gin_yard("run", "open", "GR-1", "--gin-code", "41207", "--on", "2025-10-14")
+    gin_yard("run", "feed", "GR-1", "M-1", "--on", "2025-10-14")
+    press_some(gin_yard, 6)
+    output = gin_yard("run", "weights", "GR-1").output
+    assert "GR-1  6 bales  mean 490.0" in output
+    assert "measured against" in output
+
+
+def test_a_run_with_no_bales_has_no_weights(gin_yard: Callable[..., Result]) -> None:
+    gin_yard("run", "open", "GR-1", "--gin-code", "41207", "--on", "2025-10-14")
+    result = gin_yard("run", "weights", "GR-1")
+    assert result.exit_code != 0
+    assert "has pressed no bales" in result.output
+
+
+def test_the_press_control_lists_the_season(gin_yard: Callable[..., Result]) -> None:
+    assert (
+        "no run in this crop year has pressed a bale"
+        in gin_yard("run", "press-control", "--crop-year", "2025").output
+    )
+    gin_yard("run", "open", "GR-1", "--gin-code", "41207", "--on", "2025-10-14")
+    gin_yard("run", "feed", "GR-1", "M-1", "--on", "2025-10-14")
+    press_some(gin_yard, 6)
+    assert "GR-1" in gin_yard("run", "press-control", "--crop-year", "2025").output

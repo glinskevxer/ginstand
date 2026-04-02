@@ -242,6 +242,25 @@ The office read the same sample the same way.
 How long the office keeps a sample after it classes it.
 
 
+## ginstand.quality.tolerance
+
+**BALE_TOLERANCE** = `40`
+
+How far a bale may sit from its own run's mean before it is worth a look.
+
+**MINIMUM_BALES** = `5`
+
+Below this a run's mean is not a mean, so bales are measured on the target.
+
+**RUN_TOLERANCE** = `30`
+
+How far a run's mean may sit from the target before the press is queried.
+
+**TARGET_POUNDS** = `500`
+
+What the press is set to make.
+
+
 ## ginstand.report.audit
 
 **LONG_RUN_DAYS** = `7`

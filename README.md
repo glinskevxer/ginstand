@@ -54,6 +54,7 @@ are generated and CI fails if they go stale.
 | `loan` | the published premium and discount tables, and what a bale is worth |
 | `charges` | the ginning tariff and what a share of a run costs |
 | `warehouse` | receipts and storage |
+| `quality` | bale weight control at the press |
 | `settle` | producer statements, the lease split, and the account ledger |
 | `report` | the reports the office runs |
 | `cli` | the command line |
@@ -84,6 +85,11 @@ moves their share.
 **The yard queue is age multiplied by moisture above the safe line.** Neither
 number on its own gives an order the gin manager agrees with: a dry module can
 sit for a month and a wet one cannot sit for a week.
+
+**A bale's weight is judged against its own run, not against the press
+target.** A run of consistently light bales is under control and the press needs
+looking at. One bale forty pounds off the run it came from is a bale that hung
+up. The same 455 pound bale is unremarkable on one run and a finding on another.
 
 **A statement is worked out and agreed in two steps.** Printing one does not
 put it on the producer's account, because a figure gets queried before it gets
