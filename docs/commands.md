@@ -356,6 +356,16 @@ ginstand run press-control
 
 - `--crop-year` — which crop year (required)
 
+### run sample
+
+Which bales to pull off a run and check weigh.
+
+```
+ginstand run sample <ref>
+```
+
+- `--defects` — how many of the pulled bales were bad, to get a verdict
+
 ## card
 
 Classing cards.

@@ -13,6 +13,7 @@ from ginstand.ginning.press import press
 from ginstand.ginning.restore import highest_allowed
 from ginstand.ginning.run import close_run, current_run, feed, open_run
 from ginstand.ginning.seed import record_load, seed_pounds
+from ginstand.quality.sampling import explain, judge, sample_for
 from ginstand.quality.tolerance import control_for, outliers_in, season_control
 from ginstand.report.run import allocation_sheet, bale_sheet, feed_sheet, run_sheet
 from ginstand.units.weight import format_pounds
@@ -271,5 +272,29 @@ def run_press_control(ctx: click.Context, crop_year: int) -> None:
         if not found:
             return ("no run in this crop year has pressed a bale",)
         return tuple(item.line for item in found)
+
+    run_command(work)
+
+
+@run.command("sample")
+@click.argument("ref")
+@click.option(
+    "--defects",
+    type=int,
+    default=None,
+    help="how many of the pulled bales were bad, to get a verdict",
+)
+@click.pass_context
+def run_sample(ctx: click.Context, ref: str, defects: int | None) -> None:
+    """Which bales to pull off a run and check weigh."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        tags = sample_for(holder.book, ref)
+        lot = holder.book.bales.count_for_run(ref)
+        lines = [explain(lot), *(f"  {tag}" for tag in tags)]
+        if defects is not None:
+            lines.append(f"{defects} bad: {judge(holder.book, ref, defects)}")
+        return lines
 
     run_command(work)

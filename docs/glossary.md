@@ -242,6 +242,25 @@ The office read the same sample the same way.
 How long the office keeps a sample after it classes it.
 
 
+## ginstand.quality.sampling
+
+**TABLE**
+
+The sampling table, by the smallest lot each rung covers.
+
+**Verdict.ACCEPT** = `'accept'`
+
+The run passes. Nothing to do.
+
+**Verdict.LOOK** = `'look'`
+
+Between the two numbers. Pull a second sample before deciding.
+
+**Verdict.REJECT** = `'reject'`
+
+The run fails. Every bale gets weighed and the press gets looked at.
+
+
 ## ginstand.quality.tolerance
 
 **BALE_TOLERANCE** = `40`
