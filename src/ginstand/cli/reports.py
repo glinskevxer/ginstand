@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 import click
 
@@ -11,6 +12,7 @@ from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
 from ginstand.report.field import yield_table
 from ginstand.report.recheck import overall, rate_table, turnaround
+from ginstand.store.export import verify, write_all
 
 
 @click.group()
@@ -127,6 +129,27 @@ def report_rechecks(ctx: click.Context, on: date) -> None:
         if rate.answered:
             lines.extend(("", f"the office took {turnaround(holder.book, on)} days on average"))
         return tuple(lines)
+
+    run_command(work)
+
+
+@report.command("export")
+@click.argument("folder", type=click.Path(file_okay=False, path_type=Path))
+@click.pass_context
+def report_export(ctx: click.Context, folder: Path) -> None:
+    """Write every register out as CSV for the accountant."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        written = write_all(holder.book, folder)
+        lines = [item.line for item in written]
+        problems = verify(written)
+        lines.extend(problems)
+        lines.append(
+            f"{len(written)} tables, {sum(item.rows for item in written)} rows"
+            + (f", {len(problems)} short" if problems else "")
+        )
+        return lines
 
     run_command(work)
 

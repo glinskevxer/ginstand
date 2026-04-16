@@ -302,6 +302,13 @@ Worth a look. Usually a run still in progress.
 August. The crop year is named for the calendar year its August falls in.
 
 
+## ginstand.store.export
+
+**SKIP** = `{MIGRATION_TABLE, 'sqlite_sequence'}`
+
+Tables that are the book's own machinery rather than the office's records.
+
+
 ## ginstand.units.moisture
 
 **DRYER_THRESHOLD** = `Decimal('8.0')`

@@ -795,6 +795,14 @@ ginstand report rechecks
 
 - `--on` — the day to work turnaround to (required)
 
+### report export
+
+Write every register out as CSV for the accountant.
+
+```
+ginstand report export <folder>
+```
+
 ### report book
 
 What the whole book holds, one line per register.
