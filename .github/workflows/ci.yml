@@ -167,4 +167,11 @@ jobs:
           ginstand --book "$book" report audit --on 2025-11-03
           ginstand --book "$book" report season --crop-year 2025 --runs --producers
           ginstand --book "$book" report book
+          ginstand --book "$book" report fields --crop-year 2025
+          ginstand --book "$book" run weights GR-1
+          ginstand --book "$book" run sample GR-1 --defects 0
+          ginstand --book "$book" report export /tmp/walk-csv
+          ginstand --book "$book" book verify
+          ginstand --book "$book" book counts
+          ginstand --book "$book" book backup /tmp/walk-backup.sqlite3
           ginstand --book "$book" about

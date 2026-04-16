@@ -213,3 +213,47 @@ def test_the_recheck_report_counts_the_outcomes(
     assert "Recheck outcomes" in output
     assert "leaf" in output
     assert "days on average" in output
+
+
+def test_the_book_can_be_backed_up(season: Callable[..., Result], tmp_path: Path) -> None:
+    target = tmp_path / "copy.sqlite3"
+    result = season("book", "backup", str(target))
+    assert result.exit_code == 0
+    assert "backed" in result.output
+    assert target.is_file()
+
+
+def test_backing_up_over_something_is_refused(
+    season: Callable[..., Result], tmp_path: Path
+) -> None:
+    target = tmp_path / "copy.sqlite3"
+    target.write_text("in the way")
+    result = season("book", "backup", str(target))
+    assert result.exit_code != 0
+    assert "is already there" in result.output
+
+
+def test_a_sound_book_verifies(season: Callable[..., Result]) -> None:
+    assert "the book is sound" in season("book", "verify").output
+
+
+def test_the_counts_list_every_table(season: Callable[..., Result]) -> None:
+    output = season("book", "counts").output
+    assert "Rows in the book" in output
+    assert "producer" in output
+    assert "bale" in output
+
+
+def test_the_book_can_be_compacted(season: Callable[..., Result]) -> None:
+    result = season("book", "compact")
+    assert result.exit_code == 0
+    assert "bytes to" in result.output
+
+
+def test_the_registers_export_as_csv(season: Callable[..., Result], tmp_path: Path) -> None:
+    out = tmp_path / "csv"
+    result = season("report", "export", str(out))
+    assert result.exit_code == 0
+    assert "tables," in result.output
+    assert (out / "producer.csv").is_file()
+    assert (out / "bale.csv").is_file()

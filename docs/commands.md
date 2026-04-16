@@ -810,3 +810,39 @@ What the whole book holds, one line per register.
 ```
 ginstand report book
 ```
+
+## book
+
+Looking after the book itself.
+
+### book backup
+
+Copy the book to another file through sqlite's own backup.
+
+```
+ginstand book backup <path>
+```
+
+### book verify
+
+Ask sqlite whether the book is still sound.
+
+```
+ginstand book verify
+```
+
+### book counts
+
+How many rows each table holds.
+
+```
+ginstand book counts
+```
+
+### book compact
+
+Squeeze the file down after a season's deletions.
+
+```
+ginstand book compact
+```

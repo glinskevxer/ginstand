@@ -12,7 +12,9 @@ from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
 from ginstand.report.field import yield_table
 from ginstand.report.recheck import overall, rate_table, turnaround
+from ginstand.report.table import Align, Column, Table
 from ginstand.store.export import verify, write_all
+from ginstand.store.maintenance import backup, check, compact, counts
 
 
 @click.group()
@@ -174,5 +176,69 @@ def report_book(ctx: click.Context) -> None:
             f"holds      {len(book.holds.all_open())} open",
             f"receipts   {len(book.receipts.outstanding())} outstanding",
         ]
+
+    run_command(work)
+
+
+@click.group()
+def book() -> None:
+    """Looking after the book itself."""
+
+
+@book.command("backup")
+@click.argument("path", type=click.Path(dir_okay=False, path_type=Path))
+@click.pass_context
+def book_backup(ctx: click.Context, path: Path) -> None:
+    """Copy the book to another file through sqlite's own backup."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        written = backup(holder.book, path)
+        return [f"backed {holder.path} up to {written}"]
+
+    run_command(work)
+
+
+@book.command("verify")
+@click.pass_context
+def book_verify(ctx: click.Context) -> None:
+    """Ask sqlite whether the book is still sound."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        problems = check(holder.book)
+        return problems if problems else ("the book is sound",)
+
+    run_command(work)
+
+
+@book.command("counts")
+@click.pass_context
+def book_counts(ctx: click.Context) -> None:
+    """How many rows each table holds."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        rows = tuple((table, str(n)) for table, n in counts(holder.book).items())
+        return Table(
+            title="Rows in the book",
+            columns=(Column("table"), Column("rows", Align.RIGHT)),
+            rows=rows,
+        ).render()
+
+    run_command(work)
+
+
+@book.command("compact")
+@click.pass_context
+def book_compact(ctx: click.Context) -> None:
+    """Squeeze the file down after a season's deletions."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        before = holder.path.stat().st_size if holder.path.is_file() else 0
+        compact(holder.book)
+        after = holder.path.stat().st_size if holder.path.is_file() else 0
+        return [f"{before:,} bytes to {after:,} bytes"]
 
     run_command(work)
