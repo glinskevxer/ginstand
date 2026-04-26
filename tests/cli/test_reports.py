@@ -257,3 +257,9 @@ def test_the_registers_export_as_csv(season: Callable[..., Result], tmp_path: Pa
     assert "tables," in result.output
     assert (out / "producer.csv").is_file()
     assert (out / "bale.csv").is_file()
+
+
+def test_the_variety_report_prints(season: Callable[..., Result]) -> None:
+    output = season("report", "varieties", "--crop-year", "2025").output
+    assert "Varieties, crop year 2025" in output
+    assert "unrecorded" in output

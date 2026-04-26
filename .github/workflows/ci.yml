@@ -124,6 +124,7 @@ jobs:
         run: |
           set -euo pipefail
           book=/tmp/walk.sqlite3
+          rm -rf "$book" /tmp/walk-csv /tmp/walk-backup.sqlite3
           ginstand --book "$book" init --on 2025-08-04
           ginstand --book "$book" producer add P-12 "Aldys Brothers" --ccc A4471
           ginstand --book "$book" producer add P-40 "Merrick Land Co"

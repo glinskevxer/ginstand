@@ -785,6 +785,16 @@ ginstand report fields
 
 - `--crop-year` — which crop year (required)
 
+### report varieties
+
+How each variety did, best lint per acre first.
+
+```
+ginstand report varieties
+```
+
+- `--crop-year` — which crop year (required)
+
 ### report rechecks
 
 How the rechecks the gin asked for turned out.

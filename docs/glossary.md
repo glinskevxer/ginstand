@@ -295,6 +295,17 @@ The book says two things that cannot both be true.
 Worth a look. Usually a run still in progress.
 
 
+## ginstand.report.variety
+
+**MINIMUM_FIELDS** = `3`
+
+Below this many fields, a variety's figures are one field's figures.
+
+**UNRECORDED** = `'unrecorded'`
+
+What a field with no variety on it is grouped under.
+
+
 ## ginstand.season
 
 **CROP_YEAR_START_MONTH** = `8`

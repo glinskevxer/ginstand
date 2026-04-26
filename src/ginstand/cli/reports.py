@@ -13,6 +13,7 @@ from ginstand.report.audit import audit_table, faults
 from ginstand.report.field import yield_table
 from ginstand.report.recheck import overall, rate_table, turnaround
 from ginstand.report.table import Align, Column, Table
+from ginstand.report.variety import variety_table
 from ginstand.store.export import verify, write_all
 from ginstand.store.maintenance import backup, check, compact, counts
 
@@ -116,6 +117,15 @@ def report_fields(ctx: click.Context, crop_year: int) -> None:
     """What each field yielded, best first."""
     holder = context(ctx)
     run_command(lambda: yield_table(holder.book, crop_year).render())
+
+
+@report.command("varieties")
+@click.option("--crop-year", type=int, required=True, help="which crop year")
+@click.pass_context
+def report_varieties(ctx: click.Context, crop_year: int) -> None:
+    """How each variety did, best lint per acre first."""
+    holder = context(ctx)
+    run_command(lambda: variety_table(holder.book, crop_year).render())
 
 
 @report.command("rechecks")
