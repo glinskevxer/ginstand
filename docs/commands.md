@@ -795,6 +795,25 @@ ginstand report varieties
 
 - `--crop-year` — which crop year (required)
 
+### report plastic
+
+Where the plastic came from.
+
+```
+ginstand report plastic
+```
+
+- `--crop-year` — which crop year (required)
+- `--run` — one run, with its suspect modules
+
+### report suspects
+
+The film wrapped modules that were in this bale's run.
+
+```
+ginstand report suspects <tag>
+```
+
 ### report rechecks
 
 How the rechecks the gin asked for turned out.

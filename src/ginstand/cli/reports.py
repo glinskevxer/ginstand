@@ -11,6 +11,7 @@ from ginstand.cli.common import DATE, context, run_command
 from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
 from ginstand.report.field import yield_table
+from ginstand.report.plastic import for_run, plastic_table, suspects
 from ginstand.report.recheck import overall, rate_table, turnaround
 from ginstand.report.table import Align, Column, Table
 from ginstand.report.variety import variety_table
@@ -126,6 +127,41 @@ def report_varieties(ctx: click.Context, crop_year: int) -> None:
     """How each variety did, best lint per acre first."""
     holder = context(ctx)
     run_command(lambda: variety_table(holder.book, crop_year).render())
+
+
+@report.command("plastic")
+@click.option("--crop-year", type=int, required=True, help="which crop year")
+@click.option("--run", "run_ref", default="", help="one run, with its suspect modules")
+@click.pass_context
+def report_plastic(ctx: click.Context, crop_year: int, run_ref: str) -> None:
+    """Where the plastic came from."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        if not run_ref:
+            return plastic_table(holder.book, crop_year).render()
+        item = for_run(holder.book, run_ref)
+        lines = [item.line]
+        lines.extend(f"  film module {tag}" for tag in item.film_modules)
+        return tuple(lines)
+
+    run_command(work)
+
+
+@report.command("suspects")
+@click.argument("tag")
+@click.pass_context
+def report_suspects(ctx: click.Context, tag: str) -> None:
+    """The film wrapped modules that were in this bale's run."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        found = suspects(holder.book, tag)
+        if not found:
+            return ("no film wrapped module went into this bale's run",)
+        return found
+
+    run_command(work)
 
 
 @report.command("rechecks")

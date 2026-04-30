@@ -263,3 +263,20 @@ def test_the_variety_report_prints(season: Callable[..., Result]) -> None:
     output = season("report", "varieties", "--crop-year", "2025").output
     assert "Varieties, crop year 2025" in output
     assert "unrecorded" in output
+
+
+def test_the_plastic_report_says_when_there_is_none(
+    season: Callable[..., Result],
+) -> None:
+    output = season("report", "plastic", "--crop-year", "2025").output
+    assert "no bale came back with a plastic note" in output
+
+
+def test_a_run_with_no_film_has_no_suspects(season: Callable[..., Result]) -> None:
+    output = season("report", "suspects", "254120700001").output
+    assert "no film wrapped module went into this bale's run" in output
+
+
+def test_one_run_s_plastic_record_prints(season: Callable[..., Result]) -> None:
+    output = season("report", "plastic", "--crop-year", "2025", "--run", "GR-1").output
+    assert "GR-1  0/14 bales" in output
