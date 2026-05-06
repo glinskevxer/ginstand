@@ -125,6 +125,7 @@ python -m ginstand.tools.check_pins
 python -m ginstand.tools.check_messages
 python -m ginstand.tools.check_package
 python -m ginstand.tools.check_sql
+python -m ginstand.tools.check_exports
 python -m ginstand.tools.schema_dump --check
 python -m ginstand.tools.build_docs --check
 python -m ginstand.tools.build_glossary --check
