@@ -291,6 +291,21 @@ MIGRATIONS: tuple[Migration, ...] = (
             " ON account_entry(producer, run) WHERE kind = 'settlement'",
         ),
     ),
+    Migration(
+        version=10,
+        name="closing a crop year",
+        statements=(
+            """
+            CREATE TABLE crop_year_close (
+                crop_year   INTEGER PRIMARY KEY,
+                closed_on   TEXT NOT NULL,
+                bale_weight INTEGER NOT NULL,
+                rate        TEXT NOT NULL,
+                note        TEXT NOT NULL DEFAULT ''
+            )
+            """,
+        ),
+    ),
 )
 
 

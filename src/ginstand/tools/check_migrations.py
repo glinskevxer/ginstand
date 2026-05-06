@@ -44,6 +44,7 @@ EXTRA_TABLES = {
     "seed_load",
     "recheck",
     "account_entry",
+    "crop_year_close",
 }
 """Tables no repository owns, because nothing reads them as whole records."""
 

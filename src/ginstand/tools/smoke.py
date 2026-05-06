@@ -25,13 +25,13 @@ from ginstand.errors import GinstandError
 from ginstand.ginning.allocate import allocate
 from ginstand.ginning.press import press
 from ginstand.ginning.run import close_run, feed, open_run
+from ginstand.ginning.season import totals
 from ginstand.ginning.seed import record_load
 from ginstand.ginning.turnout import turnout_for
 from ginstand.model.farm import Farm, Field
 from ginstand.model.module import Module, ModuleKind, WrapKind
 from ginstand.model.producer import Lease, LeaseKind, Producer
 from ginstand.model.warehouse import Warehouse
-from ginstand.report.season import totals
 from ginstand.settle.statement import settle
 from ginstand.store.book import Book
 from ginstand.warehouse.receipts import issue

@@ -3,84 +3,17 @@
 Everything here is a total of something already reported elsewhere, which is the
 point: the figures in this report have to agree with the run sheets or one of
 them is wrong. So it works off the same functions the run sheet does rather than
-its own queries.
-
-The turnout on this report is worked out over the whole season rather than
-averaged over the runs. Averaging run turnouts weights a fifty bale run the same
-as a five hundred bale one, and the answer comes out about a point high in a
-season with a slow start.
+its own queries, and the totals themselves live a layer down in
+:mod:`ginstand.ginning.season`, where the settlement can reach them too.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from decimal import Decimal
-
-from ginstand.errors import StateError
-from ginstand.ginning.seed import seed_pounds
+from ginstand.ginning.season import totals
 from ginstand.report.table import Align, Column, Table
 from ginstand.store.book import Book
 from ginstand.units.apportion import proportion
 from ginstand.units.weight import format_pounds
-
-
-@dataclass(frozen=True, slots=True)
-class Season:
-    """A crop year's totals."""
-
-    crop_year: int
-    runs: int
-    open_runs: int
-    modules: int
-    seed_cotton_pounds: int
-    bales: int
-    lint_pounds: int
-    seed_cotton_seed_pounds: int
-
-    @property
-    def lint_turnout(self) -> Decimal:
-        """Lint over seed cotton across the whole season."""
-        return proportion(self.lint_pounds, self.seed_cotton_pounds)
-
-    @property
-    def seed_turnout(self) -> Decimal:
-        """Seed over seed cotton across the whole season."""
-        return proportion(self.seed_cotton_seed_pounds, self.seed_cotton_pounds)
-
-    @property
-    def lint_per_bale(self) -> int:
-        """Mean net lint per bale over the season."""
-        if self.bales == 0:
-            raise StateError(f"crop year {self.crop_year} has no bales")
-        return round(self.lint_pounds / self.bales)
-
-
-def totals(book: Book, crop_year: int) -> Season:
-    """Add a crop year up."""
-    runs = book.runs.for_crop_year(crop_year)
-    if not runs:
-        raise StateError(f"crop year {crop_year} has no gin runs")
-    modules = 0
-    seed_cotton = 0
-    bales = 0
-    lint = 0
-    seed = 0
-    for run in runs:
-        modules += len(book.runs.modules_in(run.ref))
-        seed_cotton += book.runs.seed_cotton_in(run.ref)
-        bales += book.bales.count_for_run(run.ref)
-        lint += book.bales.lint_pounds_for_run(run.ref)
-        seed += seed_pounds(book, run.ref)
-    return Season(
-        crop_year=crop_year,
-        runs=len(runs),
-        open_runs=sum(1 for run in runs if run.is_open),
-        modules=modules,
-        seed_cotton_pounds=seed_cotton,
-        bales=bales,
-        lint_pounds=lint,
-        seed_cotton_seed_pounds=seed,
-    )
 
 
 def summary(book: Book, crop_year: int) -> tuple[str, ...]:

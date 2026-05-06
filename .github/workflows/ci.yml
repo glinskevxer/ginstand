@@ -165,6 +165,9 @@ jobs:
           ginstand --book "$book" settle tariff --crop-year 2025
           ginstand --book "$book" loan schedule --crop-year 2025 --table mic
           ginstand --book "$book" account owing --crop-year 2025
+          ginstand --book "$book" settle close --crop-year 2025
+          ginstand --book "$book" report varieties --crop-year 2025
+          ginstand --book "$book" report plastic --crop-year 2025
           ginstand --book "$book" report rechecks --on 2025-11-03
           ginstand --book "$book" report audit --on 2025-11-03
           ginstand --book "$book" report season --crop-year 2025 --runs --producers

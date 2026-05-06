@@ -1,6 +1,6 @@
 # The book
 
-Schema version 9, built by 9 migrations.
+Schema version 10, built by 10 migrations.
 
 This file is generated. Run `python -m ginstand.tools.schema_dump` after
 adding a migration, and CI will tell you if you forgot.
@@ -16,6 +16,7 @@ adding a migration, and CI will tell you if you forgot.
 7. warehouses and the receipts they issue
 8. recheck requests against a classing card
 9. the producer account ledger
+10. closing a crop year
 
 ## Tables
 
@@ -103,6 +104,18 @@ CREATE TABLE classing (
 ```
 
 - `CREATE INDEX classing_by_classed ON classing(classed)`
+
+### crop_year_close
+
+```sql
+CREATE TABLE crop_year_close (
+    crop_year INTEGER PRIMARY KEY,
+    closed_on TEXT NOT NULL,
+    bale_weight INTEGER NOT NULL,
+    rate TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT ''
+)
+```
 
 ### farm
 

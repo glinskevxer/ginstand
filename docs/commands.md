@@ -655,6 +655,18 @@ ginstand settle tariff
 
 - `--crop-year` — which year's rates (required)
 
+### settle close
+
+Close a crop year and pay out the fractions of a bale that are left.
+
+```
+ginstand settle close
+```
+
+- `--crop-year` — which crop year (required)
+- `--on` — the day it is closed
+- `--note` — anything worth recording
+
 ## account
 
 The producer account: settlements, adjustments and payments.

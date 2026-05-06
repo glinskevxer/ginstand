@@ -91,6 +91,11 @@ target.** A run of consistently light bales is under control and the press needs
 looking at. One bale forty pounds off the run it came from is a bale that hung
 up. The same 455 pound bale is unremarkable on one run and a finding on another.
 
+**Closing a crop year pays the fractions out.** A producer owed a third of a
+bale is paid a third of what a bale off this gin was worth this year, at the
+season's own mean weight and mean rate, because that is the only figure both
+sides can check.
+
 **A statement is worked out and agreed in two steps.** Printing one does not
 put it on the producer's account, because a figure gets queried before it gets
 agreed, and a producer querying a number they have already been credited with is

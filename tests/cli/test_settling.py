@@ -291,3 +291,25 @@ def test_a_crop_year_with_no_accounts_is_square(
     settled: Callable[..., Result],
 ) -> None:
     assert "every account is square" in settled("account", "owing", "--crop-year", "2026").output
+
+
+def test_the_close_says_what_is_stopping_it(settled: Callable[..., Result]) -> None:
+    output = settled("settle", "close", "--crop-year", "2025").output
+    assert "ready to close" in output
+
+
+def test_a_crop_year_closes_and_pays_the_carries(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    class_all(settled, tmp_path)
+    result = settled("settle", "close", "--crop-year", "2025", "--on", "2026-03-01")
+    assert result.exit_code == 0
+    assert "crop year 2025 closed 2026-03-01" in result.output
+
+
+def test_closing_twice_is_refused(settled: Callable[..., Result], tmp_path: Path) -> None:
+    class_all(settled, tmp_path)
+    settled("settle", "close", "--crop-year", "2025", "--on", "2026-03-01")
+    again = settled("settle", "close", "--crop-year", "2025", "--on", "2026-03-02")
+    assert again.exit_code != 0
+    assert "was already closed" in again.output

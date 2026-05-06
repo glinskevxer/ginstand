@@ -11,6 +11,8 @@ from ginstand.cli.common import DATE, context, parse_amount, run_command
 from ginstand.report.settlement import producer_page, reconcile, register
 from ginstand.report.table import Align, Column, Table
 from ginstand.settle.account import adjust, balance, owing, pay, post_settlement
+from ginstand.settle.close import close
+from ginstand.settle.close import summary as close_summary
 from ginstand.settle.gather import gather_all
 from ginstand.units.money import Money, format_money
 
@@ -318,5 +320,28 @@ def account_owing(ctx: click.Context, crop_year: int) -> None:
             footers=(("", "", format_money(total)),),
             empty_note="every account is square",
         ).render()
+
+    run_command(work)
+
+
+@settle.command("close")
+@click.option("--crop-year", type=int, required=True, help="which crop year")
+@click.option("--on", type=DATE, default=None, help="the day it is closed")
+@click.option("--note", default="", help="anything worth recording")
+@click.pass_context
+def settle_close(ctx: click.Context, crop_year: int, on: date | None, note: str) -> None:
+    """Close a crop year and pay out the fractions of a bale that are left."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        if on is None:
+            return close_summary(holder.book, crop_year)
+        with holder.book.writing() as writing:
+            closing, posted = close(writing, crop_year, on, note)
+        lines = [closing.line]
+        lines.extend(
+            f"  {entry.producer}  {format_money(entry.amount)}  {entry.note}" for entry in posted
+        )
+        return tuple(lines)
 
     run_command(work)
