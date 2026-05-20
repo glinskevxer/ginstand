@@ -23,6 +23,7 @@ from ginstand.store.bales import BaleStore
 from ginstand.store.cards import CardStore
 from ginstand.store.growers import LeaseStore, ProducerStore
 from ginstand.store.holds import HoldStore
+from ginstand.store.instruments import CalibrationStore, InstrumentStore
 from ginstand.store.land import FarmStore, FieldStore
 from ginstand.store.migrations import apply_pending, check_current, current_version
 from ginstand.store.modules import ModuleStore
@@ -51,6 +52,8 @@ class Book:
         self.receipts = ReceiptStore(connection)
         self.rechecks = RecheckStore(connection)
         self.accounts = AccountStore(connection)
+        self.instruments = InstrumentStore(connection)
+        self.calibrations = CalibrationStore(connection)
 
     @classmethod
     def create(cls, path: str | Path, on: date) -> Book:

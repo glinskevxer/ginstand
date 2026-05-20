@@ -1,6 +1,6 @@
 # The book
 
-Schema version 10, built by 10 migrations.
+Schema version 11, built by 11 migrations.
 
 This file is generated. Run `python -m ginstand.tools.schema_dump` after
 adding a migration, and CI will tell you if you forgot.
@@ -17,6 +17,7 @@ adding a migration, and CI will tell you if you forgot.
 8. recheck requests against a classing card
 9. the producer account ledger
 10. closing a crop year
+11. instruments and their calibration log
 
 ## Tables
 
@@ -83,6 +84,22 @@ CREATE TABLE bale_allocation (
 - `CREATE INDEX bale_allocation_by_producer ON bale_allocation(producer)`
 
 - `CREATE INDEX bale_allocation_by_run ON bale_allocation(run)`
+
+### calibration
+
+```sql
+CREATE TABLE calibration (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    instrument TEXT NOT NULL REFERENCES instrument(ref),
+    checked TEXT NOT NULL,
+    by_whom TEXT NOT NULL DEFAULT '',
+    error TEXT NOT NULL,
+    passed INTEGER NOT NULL,
+    note TEXT NOT NULL DEFAULT ''
+)
+```
+
+- `CREATE INDEX calibration_by_instrument ON calibration(instrument, checked)`
 
 ### classing
 
@@ -162,6 +179,18 @@ CREATE TABLE gin_run (
 ```
 
 - `CREATE INDEX gin_run_by_crop_year ON gin_run(crop_year)`
+
+### instrument
+
+```sql
+CREATE TABLE instrument (
+    ref TEXT PRIMARY KEY,
+    kind TEXT NOT NULL,
+    description TEXT NOT NULL,
+    serial TEXT NOT NULL DEFAULT '',
+    retired TEXT
+)
+```
 
 ### lease
 

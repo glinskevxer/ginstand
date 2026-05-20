@@ -17,7 +17,16 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
-from ginstand.store import bales, cards, growers, land, modules, runs, warehouses
+from ginstand.store import (
+    bales,
+    cards,
+    growers,
+    instruments,
+    land,
+    modules,
+    runs,
+    warehouses,
+)
 from ginstand.store.migrations import MIGRATIONS, apply_pending
 from ginstand.store.repository import Repository
 from ginstand.store.sqlite import connect, table_names
@@ -34,6 +43,7 @@ STORES: tuple[type[Repository[Any]], ...] = (
     cards.CardStore,
     warehouses.WarehouseStore,
     warehouses.ReceiptStore,
+    instruments.InstrumentStore,
 )
 
 EXTRA_TABLES = {
@@ -45,6 +55,7 @@ EXTRA_TABLES = {
     "recheck",
     "account_entry",
     "crop_year_close",
+    "calibration",
 }
 """Tables no repository owns, because nothing reads them as whole records."""
 

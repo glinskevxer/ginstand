@@ -181,6 +181,33 @@ The ticket is disputed and the module is not ginned until it is settled.
 Over the dryer's range. It goes back out to lose moisture.
 
 
+## ginstand.model.instrument
+
+**INTERVALS**
+
+Days between checks, by kind. The instrument does not get a say.
+
+**InstrumentKind.BALE_SCALE** = `'bale scale'`
+
+Weighs bales at the press.
+
+**InstrumentKind.COLORIMETER** = `'colorimeter'`
+
+The gin's own colour reading, which prices nothing but sorts bales.
+
+**InstrumentKind.MOISTURE_METER** = `'moisture meter'`
+
+Reads seed cotton and lint moisture. Drifts faster than anything else.
+
+**InstrumentKind.TRUCK_SCALE** = `'truck scale'`
+
+Legal for trade. Everything a producer is paid on crosses it.
+
+**TOLERANCES**
+
+How far out a check may read and still pass, in the instrument's own units.
+
+
 ## ginstand.model.module
 
 **MAX_MODULE_POUNDS** = `60000`

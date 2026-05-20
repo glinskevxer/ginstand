@@ -306,6 +306,33 @@ MIGRATIONS: tuple[Migration, ...] = (
             """,
         ),
     ),
+    Migration(
+        version=11,
+        name="instruments and their calibration log",
+        statements=(
+            """
+            CREATE TABLE instrument (
+                ref         TEXT PRIMARY KEY,
+                kind        TEXT NOT NULL,
+                description TEXT NOT NULL,
+                serial      TEXT NOT NULL DEFAULT '',
+                retired     TEXT
+            )
+            """,
+            """
+            CREATE TABLE calibration (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                instrument TEXT NOT NULL REFERENCES instrument(ref),
+                checked    TEXT NOT NULL,
+                by_whom    TEXT NOT NULL DEFAULT '',
+                error      TEXT NOT NULL,
+                passed     INTEGER NOT NULL,
+                note       TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX calibration_by_instrument ON calibration(instrument, checked)",
+        ),
+    ),
 )
 
 
