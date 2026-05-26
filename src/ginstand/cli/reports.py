@@ -3,11 +3,19 @@
 from __future__ import annotations
 
 from datetime import date
+from decimal import Decimal
 from pathlib import Path
 
 import click
 
-from ginstand.cli.common import DATE, context, run_command
+from ginstand.cli.common import DATE, NUMBER, context, run_command
+from ginstand.model.instrument import Instrument, InstrumentKind
+from ginstand.quality.calibration import (
+    due_on,
+    record,
+    standing_on,
+    unvouched_tickets,
+)
 from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
 from ginstand.report.field import yield_table
@@ -286,5 +294,98 @@ def book_compact(ctx: click.Context) -> None:
         compact(holder.book)
         after = holder.path.stat().st_size if holder.path.is_file() else 0
         return [f"{before:,} bytes to {after:,} bytes"]
+
+    run_command(work)
+
+
+@click.group()
+def instrument() -> None:
+    """The instruments the gin's numbers come off."""
+
+
+@instrument.command("add")
+@click.argument("ref")
+@click.argument("description")
+@click.option(
+    "--kind",
+    type=click.Choice([kind.value for kind in InstrumentKind]),
+    required=True,
+    help="what sort of instrument it is",
+)
+@click.option("--serial", default="", help="the maker's serial number")
+@click.pass_context
+def instrument_add(ctx: click.Context, ref: str, description: str, kind: str, serial: str) -> None:
+    """Put an instrument in the book."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        record_kind = InstrumentKind(kind)
+        item = Instrument(ref=ref, kind=record_kind, description=description, serial=serial)
+        with holder.book.writing() as writing:
+            writing.instruments.add(item)
+        return [
+            f"added {item.ref} {item.description} ({item.kind}), checked every {item.interval} days"
+        ]
+
+    run_command(work)
+
+
+@instrument.command("check")
+@click.argument("ref")
+@click.option("--on", type=DATE, required=True, help="the day it was checked")
+@click.option("--error", type=NUMBER, required=True, help="how far out it read")
+@click.option("--by", default="", help="who checked it")
+@click.option("--note", default="", help="anything worth recording")
+@click.pass_context
+def instrument_check(
+    ctx: click.Context, ref: str, on: date, error: Decimal, by: str, note: str
+) -> None:
+    """Log a check against an instrument."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        with holder.book.writing() as writing:
+            logged = record(writing, ref, on, error, by, note)
+        item = holder.book.instruments.get(ref)
+        verdict = "passed" if logged.passed else "FAILED"
+        return [
+            f"{logged.instrument} {verdict} at {logged.error}, tolerance {item.tolerance}",
+            f"next check due {logged.due(item.interval).isoformat()}",
+        ]
+
+    run_command(work)
+
+
+@instrument.command("standing")
+@click.option("--on", type=DATE, required=True, help="the day to ask about")
+@click.option("--ref", default="", help="one instrument, rather than the ones due")
+@click.pass_context
+def instrument_standing(ctx: click.Context, on: date, ref: str) -> None:
+    """What the instruments' calibration was on a day."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        if ref:
+            return (standing_on(holder.book, ref, on).line,)
+        found = due_on(holder.book, on)
+        if not found:
+            return ("every instrument is covered",)
+        return tuple(item.line for item in found)
+
+    run_command(work)
+
+
+@instrument.command("unvouched")
+@click.argument("ref")
+@click.pass_context
+def instrument_unvouched(ctx: click.Context, ref: str) -> None:
+    """Every module weighed in while its scale was not vouched for."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        found = unvouched_tickets(holder.book, ref)
+        if not found:
+            return ("every ticket was written on a vouched scale",)
+        return (f"{len(found)} tickets", *found)
 
     run_command(work)

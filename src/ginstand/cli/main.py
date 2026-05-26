@@ -108,6 +108,7 @@ def _register() -> None:
     cli.add_command(settling.account)
     cli.add_command(reports.report)
     cli.add_command(reports.book)
+    cli.add_command(reports.instrument)
 
 
 _register()

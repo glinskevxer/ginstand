@@ -887,3 +887,50 @@ Squeeze the file down after a season's deletions.
 ```
 ginstand book compact
 ```
+
+## instrument
+
+The instruments the gin's numbers come off.
+
+### instrument add
+
+Put an instrument in the book.
+
+```
+ginstand instrument add <ref> <description>
+```
+
+- `--kind` — what sort of instrument it is (required)
+- `--serial` — the maker's serial number
+
+### instrument check
+
+Log a check against an instrument.
+
+```
+ginstand instrument check <ref>
+```
+
+- `--on` — the day it was checked (required)
+- `--error` — how far out it read (required)
+- `--by` — who checked it
+- `--note` — anything worth recording
+
+### instrument standing
+
+What the instruments' calibration was on a day.
+
+```
+ginstand instrument standing
+```
+
+- `--on` — the day to ask about (required)
+- `--ref` — one instrument, rather than the ones due
+
+### instrument unvouched
+
+Every module weighed in while its scale was not vouched for.
+
+```
+ginstand instrument unvouched <ref>
+```

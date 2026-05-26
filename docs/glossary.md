@@ -269,6 +269,25 @@ The office read the same sample the same way.
 How long the office keeps a sample after it classes it.
 
 
+## ginstand.quality.calibration
+
+**State.COVERED** = `'covered'`
+
+A passed check covers the day.
+
+**State.FAILED** = `'failed'`
+
+The last check before the day did not pass.
+
+**State.LAPSED** = `'lapsed'`
+
+The last passed check before the day had run out.
+
+**State.NEVER** = `'never'`
+
+There is no check before the day at all.
+
+
 ## ginstand.quality.sampling
 
 **TABLE**

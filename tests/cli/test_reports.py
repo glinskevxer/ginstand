@@ -280,3 +280,47 @@ def test_a_run_with_no_film_has_no_suspects(season: Callable[..., Result]) -> No
 def test_one_run_s_plastic_record_prints(season: Callable[..., Result]) -> None:
     output = season("report", "plastic", "--crop-year", "2025", "--run", "GR-1").output
     assert "GR-1  0/14 bales" in output
+
+
+def test_an_instrument_is_added_with_its_interval(season: Callable[..., Result]) -> None:
+    result = season("instrument", "add", "SC-1", "Weighbridge", "--kind", "truck scale")
+    assert result.exit_code == 0
+    assert "checked every 182 days" in result.output
+
+
+def test_a_check_says_whether_it_passed(season: Callable[..., Result]) -> None:
+    season("instrument", "add", "MM-1", "Yard meter", "--kind", "moisture meter")
+    passed = season("instrument", "check", "MM-1", "--on", "2025-08-01", "--error", "0.2")
+    assert "passed" in passed.output
+    failed = season("instrument", "check", "MM-1", "--on", "2025-09-01", "--error", "2.4")
+    assert "FAILED" in failed.output
+
+
+def test_the_standing_names_the_ones_not_covered(
+    season: Callable[..., Result],
+) -> None:
+    season("instrument", "add", "SC-1", "Weighbridge", "--kind", "truck scale")
+    assert "never" in season("instrument", "standing", "--on", "2025-10-14").output
+    season("instrument", "check", "SC-1", "--on", "2025-08-01", "--error", "12")
+    assert (
+        "every instrument is covered"
+        in season("instrument", "standing", "--on", "2025-10-14").output
+    )
+
+
+def test_one_instrument_can_be_asked_about(season: Callable[..., Result]) -> None:
+    season("instrument", "add", "SC-1", "Weighbridge", "--kind", "truck scale")
+    season("instrument", "check", "SC-1", "--on", "2025-08-01", "--error", "12")
+    output = season("instrument", "standing", "--on", "2025-10-14", "--ref", "SC-1").output
+    assert "covered" in output
+    assert "due 2026-01-30" in output
+
+
+def test_the_unvouched_tickets_are_listed(season: Callable[..., Result]) -> None:
+    season("instrument", "add", "SC-1", "Weighbridge", "--kind", "truck scale")
+    assert "1 tickets" in season("instrument", "unvouched", "SC-1").output
+    season("instrument", "check", "SC-1", "--on", "2025-08-01", "--error", "12")
+    assert (
+        "every ticket was written on a vouched scale"
+        in season("instrument", "unvouched", "SC-1").output
+    )
