@@ -18,6 +18,7 @@ from ginstand.quality.calibration import (
 )
 from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
+from ginstand.report.daily import full, sheet
 from ginstand.report.field import yield_table
 from ginstand.report.plastic import for_run, plastic_table, suspects
 from ginstand.report.recheck import overall, rate_table, turnaround
@@ -115,6 +116,22 @@ def report_audit(ctx: click.Context, on: date, faults_only: bool) -> None:
                 return ("no faults",)
             return tuple(note.line for note in found)
         return audit_table(holder.book, on).render()
+
+    run_command(work)
+
+
+@report.command("day")
+@click.option("--on", type=DATE, required=True, help="which day")
+@click.option("--lists", is_flag=True, help="add the module and bale lists")
+@click.pass_context
+def report_day(ctx: click.Context, on: date, lists: bool) -> None:
+    """Everything that happened on one day."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        if lists:
+            return full(holder.book, on)
+        return sheet(holder.book, on).lines
 
     run_command(work)
 

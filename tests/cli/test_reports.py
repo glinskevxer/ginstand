@@ -324,3 +324,19 @@ def test_the_unvouched_tickets_are_listed(season: Callable[..., Result]) -> None
         "every ticket was written on a vouched scale"
         in season("instrument", "unvouched", "SC-1").output
     )
+
+
+def test_the_day_sheet_prints(season: Callable[..., Result]) -> None:
+    output = season("report", "day", "--on", "2025-10-14").output
+    assert "Day sheet for 2025-10-14" in output
+    assert "pressed" in output
+
+
+def test_a_quiet_day_says_so(season: Callable[..., Result]) -> None:
+    output = season("report", "day", "--on", "2025-12-25").output
+    assert "nothing was written down for this day" in output
+
+
+def test_the_day_sheet_can_carry_its_lists(season: Callable[..., Result]) -> None:
+    output = season("report", "day", "--on", "2025-10-14", "--lists").output
+    assert "Pressed on 2025-10-14" in output

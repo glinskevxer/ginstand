@@ -833,6 +833,17 @@ ginstand report audit
 - `--on` — the day to audit at (required)
 - `--faults-only` — leave out the queries
 
+### report day
+
+Everything that happened on one day.
+
+```
+ginstand report day
+```
+
+- `--on` — which day (required)
+- `--lists` — add the module and bale lists
+
 ### report fields
 
 What each field yielded, best first.
