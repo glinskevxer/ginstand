@@ -18,6 +18,9 @@ from datetime import date
 from decimal import Decimal
 from enum import StrEnum
 
+from ginstand.classing.recheck import CHASE_AFTER_DAYS, to_chase
+from ginstand.model.instrument import InstrumentKind
+from ginstand.quality.calibration import due_on, unvouched_tickets
 from ginstand.report.table import Column, Table
 from ginstand.store.book import Book
 from ginstand.yard.order import RISK_LIMIT, spoil_points
@@ -143,6 +146,48 @@ def modules_at_risk(book: Book, on: date) -> list[Note]:
     return notes
 
 
+def instruments_not_covered(book: Book, on: date) -> list[Note]:
+    """Every instrument in service with no passed check covering the day."""
+    return [
+        Note(Severity.QUERY, standing.instrument, standing.line.split(None, 1)[1])
+        for standing in due_on(book, on)
+    ]
+
+
+def tickets_off_an_unvouched_scale(book: Book) -> list[Note]:
+    """Every truck scale with tickets nobody can vouch for.
+
+    A fault rather than a query. A ticket written on a scale with no passed
+    check behind it is a weight the gin cannot stand behind, and a producer who
+    asks about it has to be told so.
+    """
+    notes = []
+    for scale in book.instruments.of_kind(InstrumentKind.TRUCK_SCALE):
+        tickets = unvouched_tickets(book, scale.ref)
+        if tickets:
+            notes.append(
+                Note(
+                    Severity.FAULT,
+                    scale.ref,
+                    f"{len(tickets)} tickets were written while it was not vouched for",
+                )
+            )
+    return notes
+
+
+def rechecks_to_chase(book: Book, on: date) -> list[Note]:
+    """Every recheck the office has had longer than it usually takes."""
+    return [
+        Note(
+            Severity.QUERY,
+            standing.tag,
+            f"has been at the classing office {standing.days_out(on)} days, "
+            f"which is over {CHASE_AFTER_DAYS}",
+        )
+        for standing in to_chase(book, on)
+    ]
+
+
 def bales_waiting_on_a_card(book: Book) -> list[Note]:
     """How many bales have no classing card yet."""
     waiting = book.cards.unclassed_tags()
@@ -158,8 +203,11 @@ def audit(book: Book, on: date) -> tuple[Note, ...]:
         *unowned_receipts(book),
         *receipts_against_the_wrong_holder(book),
         *carries_that_do_not_cancel(book),
+        *tickets_off_an_unvouched_scale(book),
         *long_open_runs(book, on),
         *modules_at_risk(book, on),
+        *instruments_not_covered(book, on),
+        *rechecks_to_chase(book, on),
         *bales_waiting_on_a_card(book),
     ]
     return tuple(sorted(notes, key=lambda note: (note.severity is Severity.QUERY, note.subject)))

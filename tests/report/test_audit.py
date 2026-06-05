@@ -2,13 +2,19 @@
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal
 
+from ginstand.classing.recheck import CHASE_AFTER_DAYS, request
 from ginstand.ginning.allocate import allocate
 from ginstand.ginning.press import press
 from ginstand.ginning.run import close_run, feed, open_run
+from ginstand.grades.color import ColorGrade
+from ginstand.model.classing import Classing
+from ginstand.model.instrument import Instrument, InstrumentKind
+from ginstand.model.recheck import RecheckReason
 from ginstand.model.warehouse import Warehouse
+from ginstand.quality.calibration import record
 from ginstand.report.audit import (
     LONG_RUN_DAYS,
     Severity,
@@ -139,3 +145,50 @@ def test_a_consistent_book_prints_no_counts(book: Book) -> None:
     lines = audit_table(book, TODAY).render()
     assert lines[-1] == "the book is consistent"
     assert not any("faults" in line for line in lines)
+
+
+def a_scale(book: Book, ref: str = "SC-1") -> None:
+    book.instruments.add(
+        Instrument(ref=ref, kind=InstrumentKind.TRUCK_SCALE, description="Weighbridge")
+    )
+
+
+def test_an_instrument_never_checked_is_a_query(book: Book) -> None:
+    a_scale(book)
+    notes = audit(book, TODAY)
+    assert any(note.subject == "SC-1" and note.severity is Severity.QUERY for note in notes)
+
+
+def test_tickets_off_an_unvouched_scale_are_a_fault(book: Book) -> None:
+    a_scale(book)
+    gin(book)
+    found = faults(book, TODAY)
+    assert any("were written while it was not vouched for" in note.message for note in found)
+
+
+def test_a_checked_scale_leaves_nothing_behind(book: Book) -> None:
+    a_scale(book)
+    gin(book)
+    record(book, "SC-1", date(2025, 9, 1), Decimal("12"))
+    found = faults(book, TODAY)
+    assert not any("vouched" in note.message for note in found)
+
+
+def test_a_recheck_out_too_long_is_a_query(book: Book) -> None:
+    gin(book)
+    book.cards.add(
+        Classing(
+            tag="254120700001",
+            classed=date(2025, 10, 20),
+            color=ColorGrade(31),
+            leaf=3,
+            staple=35,
+            micronaire=Decimal("4.3"),
+            strength=Decimal("29.4"),
+            uniformity=Decimal("81.2"),
+        )
+    )
+    request(book, "254120700001", RecheckReason.LEAF, date(2025, 10, 21))
+    late = date(2025, 10, 21) + timedelta(days=CHASE_AFTER_DAYS + 1)
+    notes = audit(book, late)
+    assert any("at the classing office" in note.message for note in notes)
