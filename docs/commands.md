@@ -220,6 +220,52 @@ ginstand yard holds
 
 - `--on` — the day to count the days held to (required)
 
+### yard put
+
+Stand a module at the open end of a row.
+
+```
+ginstand yard put <tag> <yard_row>
+```
+
+- `--on` — the day it was stood there (required)
+
+### yard clear
+
+Take a module out of the yard map.
+
+```
+ginstand yard clear <tag>
+```
+
+### yard map
+
+Where everything is standing.
+
+```
+ginstand yard map
+```
+
+- `--row` — one row, rather than all of them
+
+### yard dig
+
+What has to move before a module can be got at.
+
+```
+ginstand yard dig <tag>
+```
+
+### yard feed-order
+
+The queue reordered so each row is worked from its open end.
+
+```
+ginstand yard feed-order
+```
+
+- `--on` — the day to work it out at (required)
+
 ## run
 
 Gin runs.

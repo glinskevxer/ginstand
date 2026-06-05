@@ -106,6 +106,10 @@ Which ranks the chart carries in each group.
 
 Two to twenty four characters, upper case, digits and inner dashes.
 
+**ROW_PATTERN** = `re.compile('^[A-Z0-9][A-Z0-9-]{0,7}$')`
+
+One to eight characters. A yard row is called A, or 12, or NORTH-3.
+
 
 ## ginstand.loan.schedule
 

@@ -147,6 +147,14 @@ jobs:
             --gross 46140 --tare 26140 --moisture 12.6 --wrap tarp
           ginstand --book "$book" yard standing --on 2025-10-12
           ginstand --book "$book" yard queue --on 2025-10-12
+          ginstand --book "$book" yard put M-1 A --on 2025-10-02
+          ginstand --book "$book" yard put M-2 A --on 2025-10-02
+          ginstand --book "$book" yard map
+          ginstand --book "$book" yard dig M-1
+          ginstand --book "$book" yard feed-order --on 2025-10-12
+          ginstand --book "$book" instrument add SC-1 Weighbridge --kind "truck scale"
+          ginstand --book "$book" instrument check SC-1 --on 2025-08-01 --error 12
+          ginstand --book "$book" instrument standing --on 2025-10-14
           ginstand --book "$book" run open GR-1 --gin-code 41207 --on 2025-10-14
           ginstand --book "$book" run feed-queue GR-1 --on 2025-10-14
           ginstand --book "$book" run press GR-1 --on 2025-10-14 \

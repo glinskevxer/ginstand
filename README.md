@@ -86,6 +86,12 @@ moves their share.
 number on its own gives an order the gin manager agrees with: a dry module can
 sit for a month and a wet one cannot sit for a week.
 
+**The order the cotton wants and the order the yard can feed are not the same
+order.** A row is worked from one end, so a module spoiling in the middle of one
+waits for what is in front of it. Both orders are printed and the yard manager
+decides, because this package does not have an opinion about whether a spoiling
+module is worth an hour of loader time.
+
 **A bale's weight is judged against its own run, not against the press
 target.** A run of consistently light bales is under control and the press needs
 looking at. One bale forty pounds off the run it came from is a bale that hung

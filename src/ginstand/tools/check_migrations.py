@@ -56,6 +56,7 @@ EXTRA_TABLES = {
     "account_entry",
     "crop_year_close",
     "calibration",
+    "yard_place",
 }
 """Tables no repository owns, because nothing reads them as whole records."""
 

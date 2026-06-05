@@ -13,6 +13,7 @@ from ginstand.ids import (
     make_pbi,
     parse_pbi,
     reference,
+    row_name,
 )
 
 
@@ -120,3 +121,22 @@ def test_a_bale_tag_is_checked_before_it_is_normalised() -> None:
 
 def test_a_normalised_tag_is_already_normal() -> None:
     assert bale_tag(bale_tag("25-41207-00061")) == "254120700061"
+
+
+@pytest.mark.parametrize(
+    ("given", "expected"), [("a", "A"), (" 12 ", "12"), ("north-3", "NORTH-3")]
+)
+def test_a_yard_row_may_be_one_character(given: str, expected: str) -> None:
+    assert row_name(given) == expected
+
+
+@pytest.mark.parametrize("given", ["", "  ", "-A", "A B", "A" * 9, "A_1"])
+def test_a_row_name_of_the_wrong_shape_is_refused(given: str) -> None:
+    with pytest.raises(ValidationError):
+        row_name(given)
+
+
+def test_a_row_name_is_not_an_office_reference() -> None:
+    assert row_name("A") == "A"
+    with pytest.raises(ValidationError):
+        reference("A")

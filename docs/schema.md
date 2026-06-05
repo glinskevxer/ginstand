@@ -1,6 +1,6 @@
 # The book
 
-Schema version 11, built by 11 migrations.
+Schema version 12, built by 12 migrations.
 
 This file is generated. Run `python -m ginstand.tools.schema_dump` after
 adding a migration, and CI will tell you if you forgot.
@@ -18,6 +18,7 @@ adding a migration, and CI will tell you if you forgot.
 9. the producer account ledger
 10. closing a crop year
 11. instruments and their calibration log
+12. where a module is standing in the yard
 
 ## Tables
 
@@ -358,3 +359,16 @@ CREATE TABLE yard_hold (
 - `CREATE INDEX yard_hold_by_module ON yard_hold(module)`
 
 - `CREATE UNIQUE INDEX yard_hold_one_active ON yard_hold(module) WHERE lifted IS NULL`
+
+### yard_place
+
+```sql
+CREATE TABLE yard_place (
+    module TEXT PRIMARY KEY REFERENCES module(tag),
+    yard_row TEXT NOT NULL,
+    position INTEGER NOT NULL,
+    placed TEXT NOT NULL
+)
+```
+
+- `CREATE UNIQUE INDEX yard_place_spot ON yard_place(yard_row, position)`

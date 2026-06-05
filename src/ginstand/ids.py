@@ -46,6 +46,28 @@ def reference(value: str, kind: str = "reference") -> str:
     return cleaned
 
 
+ROW_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9-]{0,7}$")
+"""One to eight characters. A yard row is called A, or 12, or NORTH-3."""
+
+
+def row_name(value: str) -> str:
+    """Normalise a yard row's name.
+
+    A row is not an office reference and it does not have to be two characters
+    long. Half the yards in the country number their rows and the other half
+    letter them, and both of those are one character.
+    """
+    cleaned = value.strip().upper()
+    if not cleaned:
+        raise ValidationError("row", "is empty")
+    if not ROW_PATTERN.match(cleaned):
+        raise ValidationError(
+            "row",
+            f"must be 1 to 8 characters of letters, digits and inner dashes, got {value!r}",
+        )
+    return cleaned
+
+
 def gin_code(value: str) -> str:
     """The five digit code the classing office issued to this gin."""
     cleaned = value.strip()

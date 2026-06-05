@@ -333,6 +333,21 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE INDEX calibration_by_instrument ON calibration(instrument, checked)",
         ),
     ),
+    Migration(
+        version=12,
+        name="where a module is standing in the yard",
+        statements=(
+            """
+            CREATE TABLE yard_place (
+                module   TEXT PRIMARY KEY REFERENCES module(tag),
+                yard_row TEXT NOT NULL,
+                position INTEGER NOT NULL,
+                placed   TEXT NOT NULL
+            )
+            """,
+            "CREATE UNIQUE INDEX yard_place_spot ON yard_place(yard_row, position)",
+        ),
+    ),
 )
 
 

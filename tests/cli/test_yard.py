@@ -144,3 +144,47 @@ def test_the_hold_list_names_who_placed_it(yard: Callable[..., Result]) -> None:
 
 def test_an_empty_yard_says_so(yard: Callable[..., Result]) -> None:
     assert "the yard is empty" in yard("yard", "standing", "--on", "2025-10-12").output
+
+
+def test_a_module_stands_in_a_row_and_comes_out_again(
+    yard: Callable[..., Result],
+) -> None:
+    weigh_in(yard, "M-1")
+    placed = yard("yard", "put", "M-1", "a", "--on", "2025-10-02")
+    assert placed.exit_code == 0
+    assert "M-1 is at A-01" in placed.output
+    cleared = yard("yard", "clear", "M-1")
+    assert "has come out of A-01" in cleared.output
+
+
+def test_the_map_shows_the_rows(yard: Callable[..., Result]) -> None:
+    assert "nothing has been placed in the yard" in yard("yard", "map").output
+    weigh_in(yard, "M-1")
+    weigh_in(yard, "M-2")
+    yard("yard", "put", "M-1", "A", "--on", "2025-10-02")
+    yard("yard", "put", "M-2", "A", "--on", "2025-10-02")
+    output = yard("yard", "map").output
+    assert "row A: 2 modules" in output
+    assert "A-01  M-1" in output
+
+
+def test_digging_says_what_is_in_front(yard: Callable[..., Result]) -> None:
+    weigh_in(yard, "M-1")
+    weigh_in(yard, "M-2")
+    assert "not on the yard map" in yard("yard", "dig", "M-1").output
+    yard("yard", "put", "M-1", "A", "--on", "2025-10-02")
+    yard("yard", "put", "M-2", "A", "--on", "2025-10-02")
+    assert "1 modules in front of it" in yard("yard", "dig", "M-1").output
+    assert "at the open end of A" in yard("yard", "dig", "M-2").output
+
+
+def test_the_feed_order_counts_what_is_out_of_place(
+    yard: Callable[..., Result],
+) -> None:
+    assert "nothing is free to gin" in yard("yard", "feed-order", "--on", "2025-10-12").output
+    weigh_in(yard, "M-1", moisture="13.0")
+    weigh_in(yard, "M-2", moisture="7.0")
+    yard("yard", "put", "M-1", "A", "--on", "2025-10-02")
+    yard("yard", "put", "M-2", "A", "--on", "2025-10-02")
+    output = yard("yard", "feed-order", "--on", "2025-10-12").output
+    assert "2 modules, 2 out of the order the cotton wants" in output

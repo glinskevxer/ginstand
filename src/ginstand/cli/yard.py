@@ -14,6 +14,18 @@ from ginstand.report.yard import ginning_queue, holds, standing
 from ginstand.units.weight import format_pounds
 from ginstand.yard.holds import lift, place, suggest
 from ginstand.yard.order import entry_for
+from ginstand.yard.places import (
+    buried,
+    digging,
+    place_of,
+    put,
+    row_listing,
+    row_order,
+    rows,
+)
+from ginstand.yard.places import (
+    lift as lift_place,
+)
 from ginstand.yard.receiving import receive
 
 
@@ -182,3 +194,95 @@ def yard_holds(ctx: click.Context, on: date) -> None:
     """Everything the yard is holding."""
     holder = context(ctx)
     run_command(lambda: holds(holder.book, on).render())
+
+
+@yard.command("put")
+@click.argument("tag")
+@click.argument("yard_row")
+@click.option("--on", type=DATE, required=True, help="the day it was stood there")
+@click.pass_context
+def yard_put(ctx: click.Context, tag: str, yard_row: str, on: date) -> None:
+    """Stand a module at the open end of a row."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        with holder.book.writing() as writing:
+            placed = put(writing, tag, yard_row, on)
+        return [f"{placed.module} is at {placed.row}-{placed.position:02d}"]
+
+    run_command(work)
+
+
+@yard.command("clear")
+@click.argument("tag")
+@click.pass_context
+def yard_clear(ctx: click.Context, tag: str) -> None:
+    """Take a module out of the yard map."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        with holder.book.writing() as writing:
+            gone = lift_place(writing, tag)
+        return [f"{gone.module} has come out of {gone.row}-{gone.position:02d}"]
+
+    run_command(work)
+
+
+@yard.command("map")
+@click.option("--row", "yard_row", default="", help="one row, rather than all of them")
+@click.pass_context
+def yard_map(ctx: click.Context, yard_row: str) -> None:
+    """Where everything is standing."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        wanted = (yard_row,) if yard_row else rows(holder.book)
+        if not wanted:
+            return ("nothing has been placed in the yard",)
+        lines = []
+        for name in wanted:
+            listing = row_listing(holder.book, name)
+            lines.append(f"row {name}: {len(listing)} modules")
+            lines.extend(f"  {item.line}" for item in listing)
+        return tuple(lines)
+
+    run_command(work)
+
+
+@yard.command("dig")
+@click.argument("tag")
+@click.pass_context
+def yard_dig(ctx: click.Context, tag: str) -> None:
+    """What has to move before a module can be got at."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        standing = place_of(holder.book, tag)
+        if standing is None:
+            return (f"{tag.strip().upper()} is not on the yard map",)
+        blocking = buried(holder.book, tag)
+        if not blocking:
+            return (f"{standing.module} is at the open end of {standing.row}",)
+        return (f"{len(blocking)} modules in front of it", *blocking)
+
+    run_command(work)
+
+
+@yard.command("feed-order")
+@click.option("--on", type=DATE, required=True, help="the day to work it out at")
+@click.pass_context
+def yard_feed_order(ctx: click.Context, on: date) -> None:
+    """The queue reordered so each row is worked from its open end."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        tags = tuple(module.tag for module in holder.book.modules.unginned())
+        ordered = row_order(holder.book, tags, on)
+        if not ordered:
+            return ("nothing is free to gin",)
+        moved = digging(holder.book, tags, on)
+        lines = [f"{len(ordered)} modules, {moved} out of the order the cotton wants"]
+        lines.extend(f"  {index:>3}  {tag}" for index, tag in enumerate(ordered, start=1))
+        return tuple(lines)
+
+    run_command(work)
