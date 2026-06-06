@@ -713,6 +713,16 @@ ginstand settle close
 - `--on` — the day it is closed
 - `--note` — anything worth recording
 
+### settle season
+
+One producer's whole season on one page.
+
+```
+ginstand settle season <producer>
+```
+
+- `--crop-year` — which crop year (required)
+
 ## account
 
 The producer account: settlements, adjustments and payments.

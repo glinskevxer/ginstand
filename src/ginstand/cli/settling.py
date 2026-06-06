@@ -8,6 +8,7 @@ import click
 
 from ginstand.charges.published import seed_price_for, tariff_for
 from ginstand.cli.common import DATE, context, parse_amount, run_command
+from ginstand.report.producer import page
 from ginstand.report.settlement import producer_page, reconcile, register
 from ginstand.report.table import Align, Column, Table
 from ginstand.settle.account import adjust, balance, owing, pay, post_settlement
@@ -345,3 +346,13 @@ def settle_close(ctx: click.Context, crop_year: int, on: date | None, note: str)
         return tuple(lines)
 
     run_command(work)
+
+
+@settle.command("season")
+@click.argument("producer")
+@click.option("--crop-year", type=int, required=True, help="which crop year")
+@click.pass_context
+def settle_season(ctx: click.Context, producer: str, crop_year: int) -> None:
+    """One producer's whole season on one page."""
+    holder = context(ctx)
+    run_command(lambda: page(holder.book, producer, crop_year))
