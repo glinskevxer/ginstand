@@ -340,3 +340,10 @@ def test_a_quiet_day_says_so(season: Callable[..., Result]) -> None:
 def test_the_day_sheet_can_carry_its_lists(season: Callable[..., Result]) -> None:
     output = season("report", "day", "--on", "2025-10-14", "--lists").output
     assert "Pressed on 2025-10-14" in output
+
+
+def test_the_book_check_prints_one_page(season: Callable[..., Result]) -> None:
+    output = season("book", "check", "--on", "2025-10-20").output
+    assert "Book check at 2025-10-20" in output
+    assert "schema version" in output
+    assert "queries" in output

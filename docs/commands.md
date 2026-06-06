@@ -923,6 +923,16 @@ ginstand report book
 
 Looking after the book itself.
 
+### book check
+
+Ask everything worth asking about the book, in one page.
+
+```
+ginstand book check
+```
+
+- `--on` — the day to check at (required)
+
 ### book backup
 
 Copy the book to another file through sqlite's own backup.

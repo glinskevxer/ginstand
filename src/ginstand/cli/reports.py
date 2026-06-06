@@ -19,6 +19,7 @@ from ginstand.quality.calibration import (
 from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
 from ginstand.report.daily import full, sheet
+from ginstand.report.doctor import diagnose
 from ginstand.report.field import yield_table
 from ginstand.report.plastic import for_run, plastic_table, suspects
 from ginstand.report.recheck import overall, rate_table, turnaround
@@ -254,6 +255,15 @@ def report_book(ctx: click.Context) -> None:
 @click.group()
 def book() -> None:
     """Looking after the book itself."""
+
+
+@book.command("check")
+@click.option("--on", type=DATE, required=True, help="the day to check at")
+@click.pass_context
+def book_check(ctx: click.Context, on: date) -> None:
+    """Ask everything worth asking about the book, in one page."""
+    holder = context(ctx)
+    run_command(lambda: diagnose(holder.book, on).lines)
 
 
 @book.command("backup")
