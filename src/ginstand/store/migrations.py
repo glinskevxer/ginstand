@@ -348,6 +348,24 @@ MIGRATIONS: tuple[Migration, ...] = (
             "CREATE UNIQUE INDEX yard_place_spot ON yard_place(yard_row, position)",
         ),
     ),
+    Migration(
+        version=13,
+        name="the downtime log against a run",
+        statements=(
+            """
+            CREATE TABLE downtime (
+                id      INTEGER PRIMARY KEY AUTOINCREMENT,
+                run     TEXT NOT NULL REFERENCES gin_run(ref),
+                stopped TEXT NOT NULL,
+                started INTEGER NOT NULL,
+                minutes INTEGER NOT NULL,
+                reason  TEXT NOT NULL,
+                note    TEXT NOT NULL DEFAULT ''
+            )
+            """,
+            "CREATE INDEX downtime_by_run ON downtime(run, stopped, started)",
+        ),
+    ),
 )
 
 

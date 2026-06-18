@@ -1,6 +1,6 @@
 # The book
 
-Schema version 12, built by 12 migrations.
+Schema version 13, built by 13 migrations.
 
 This file is generated. Run `python -m ginstand.tools.schema_dump` after
 adding a migration, and CI will tell you if you forgot.
@@ -19,6 +19,7 @@ adding a migration, and CI will tell you if you forgot.
 10. closing a crop year
 11. instruments and their calibration log
 12. where a module is standing in the yard
+13. the downtime log against a run
 
 ## Tables
 
@@ -134,6 +135,22 @@ CREATE TABLE crop_year_close (
     note TEXT NOT NULL DEFAULT ''
 )
 ```
+
+### downtime
+
+```sql
+CREATE TABLE downtime (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    run TEXT NOT NULL REFERENCES gin_run(ref),
+    stopped TEXT NOT NULL,
+    started INTEGER NOT NULL,
+    minutes INTEGER NOT NULL,
+    reason TEXT NOT NULL,
+    note TEXT NOT NULL DEFAULT ''
+)
+```
+
+- `CREATE INDEX downtime_by_run ON downtime(run, stopped, started)`
 
 ### farm
 

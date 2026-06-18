@@ -21,6 +21,7 @@ from ginstand.store.accounts import AccountStore
 from ginstand.store.allocations import AllocationStore
 from ginstand.store.bales import BaleStore
 from ginstand.store.cards import CardStore
+from ginstand.store.downtime import DowntimeStore
 from ginstand.store.growers import LeaseStore, ProducerStore
 from ginstand.store.holds import HoldStore
 from ginstand.store.instruments import CalibrationStore, InstrumentStore
@@ -54,6 +55,7 @@ class Book:
         self.accounts = AccountStore(connection)
         self.instruments = InstrumentStore(connection)
         self.calibrations = CalibrationStore(connection)
+        self.downtime = DowntimeStore(connection)
 
     @classmethod
     def create(cls, path: str | Path, on: date) -> Book:

@@ -155,6 +155,33 @@ Bagging and eight ties. Outside this range the tare was typed wrong.
 A press cycle that produced less than this did not make a saleable bale.
 
 
+## ginstand.model.downtime
+
+**StopReason.BREAKDOWN** = `'breakdown'`
+
+Something broke. The expensive one.
+
+**StopReason.CHANGEOVER** = `'changeover'`
+
+Moving between producers, which is what identity preservation costs.
+
+**StopReason.CHOKE** = `'choke'`
+
+Something jammed. The commonest reason and the cheapest to fix.
+
+**StopReason.CLEANING** = `'cleaning'`
+
+Planned. It still costs the same hour.
+
+**StopReason.POWER** = `'power'`
+
+Somebody else's fault, and it still shows in the bales per hour.
+
+**StopReason.WAITING** = `'waiting on modules'`
+
+The yard could not feed the stands. Not a gin problem at all.
+
+
 ## ginstand.model.farm
 
 **MAX_FIELD_ACRES** = `Decimal('5000')`
