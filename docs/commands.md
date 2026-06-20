@@ -412,6 +412,40 @@ ginstand run sample <ref>
 
 - `--defects` — how many of the pulled bales were bad, to get a verdict
 
+### run stop
+
+Write a stop down against a run.
+
+```
+ginstand run stop <ref>
+```
+
+- `--on` — the day the gin stopped (required)
+- `--at` — the time it stopped, as hh:mm (required)
+- `--minutes` — how long it was stopped (required)
+- `--reason` — why it stopped (required)
+- `--note` — anything worth recording
+
+### run downtime
+
+A run's stops, and what they did to its bales an hour.
+
+```
+ginstand run downtime <ref>
+```
+
+- `--shift` — minutes in a shift
+
+### run stoppages
+
+Every minute the gin was stopped in a crop year, worst reason first.
+
+```
+ginstand run stoppages
+```
+
+- `--crop-year` — which crop year (required)
+
 ## card
 
 Classing cards.

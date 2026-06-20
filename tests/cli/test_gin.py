@@ -246,3 +246,132 @@ def test_the_press_control_lists_the_season(gin_yard: Callable[..., Result]) -> 
     gin_yard("run", "feed", "GR-1", "M-1", "--on", "2025-10-14")
     press_some(gin_yard, 6)
     assert "GR-1" in gin_yard("run", "press-control", "--crop-year", "2025").output
+
+
+def a_closed_run(gin_yard: Callable[..., Result]) -> None:
+    gin_yard("run", "open", "GR-1", "--gin-code", "41207", "--on", "2025-10-14")
+    gin_yard("run", "feed", "GR-1", "M-1", "--on", "2025-10-14")
+    press_some(gin_yard, 6)
+    gin_yard("run", "close", "GR-1", "--on", "2025-10-14", "--allocate")
+
+
+def test_a_stop_is_written_down(gin_yard: Callable[..., Result]) -> None:
+    a_closed_run(gin_yard)
+    result = gin_yard(
+        "run",
+        "stop",
+        "GR-1",
+        "--on",
+        "2025-10-14",
+        "--at",
+        "09:30",
+        "--minutes",
+        "45",
+        "--reason",
+        "choke",
+    )
+    assert result.exit_code == 0
+    assert "09:30-10:15" in result.output
+
+
+def test_an_overlapping_stop_is_refused(gin_yard: Callable[..., Result]) -> None:
+    a_closed_run(gin_yard)
+    gin_yard(
+        "run",
+        "stop",
+        "GR-1",
+        "--on",
+        "2025-10-14",
+        "--at",
+        "09:30",
+        "--minutes",
+        "45",
+        "--reason",
+        "choke",
+    )
+    again = gin_yard(
+        "run",
+        "stop",
+        "GR-1",
+        "--on",
+        "2025-10-14",
+        "--at",
+        "10:00",
+        "--minutes",
+        "30",
+        "--reason",
+        "breakdown",
+    )
+    assert again.exit_code != 0
+    assert "already logged as stopped" in again.output
+
+
+def test_a_time_that_is_not_hh_mm_is_refused(gin_yard: Callable[..., Result]) -> None:
+    a_closed_run(gin_yard)
+    result = gin_yard(
+        "run",
+        "stop",
+        "GR-1",
+        "--on",
+        "2025-10-14",
+        "--at",
+        "930",
+        "--minutes",
+        "45",
+        "--reason",
+        "choke",
+    )
+    assert result.exit_code != 0
+    assert "hh:mm" in result.output
+
+
+def test_the_downtime_reads_back_with_the_figure(
+    gin_yard: Callable[..., Result],
+) -> None:
+    a_closed_run(gin_yard)
+    assert "no downtime recorded" in gin_yard("run", "downtime", "GR-1").output
+    gin_yard(
+        "run",
+        "stop",
+        "GR-1",
+        "--on",
+        "2025-10-14",
+        "--at",
+        "09:30",
+        "--minutes",
+        "72",
+        "--reason",
+        "choke",
+    )
+    output = gin_yard("run", "downtime", "GR-1").output
+    assert "90.00% up" in output
+    assert "worst choke" in output
+
+
+def test_the_shift_length_can_be_given(gin_yard: Callable[..., Result]) -> None:
+    a_closed_run(gin_yard)
+    assert gin_yard("run", "downtime", "GR-1", "--shift", "480").exit_code == 0
+
+
+def test_the_season_stoppages_list(gin_yard: Callable[..., Result]) -> None:
+    a_closed_run(gin_yard)
+    assert (
+        "no stop has been written down"
+        in gin_yard("run", "stoppages", "--crop-year", "2025").output
+    )
+    gin_yard(
+        "run",
+        "stop",
+        "GR-1",
+        "--on",
+        "2025-10-14",
+        "--at",
+        "09:30",
+        "--minutes",
+        "45",
+        "--reason",
+        "choke",
+    )
+    output = gin_yard("run", "stoppages", "--crop-year", "2025").output
+    assert "45 minutes stopped in crop year 2025" in output
+    assert "choke" in output

@@ -86,6 +86,11 @@ moves their share.
 number on its own gives an order the gin manager agrees with: a dry module can
 sit for a month and a wet one cannot sit for a week.
 
+**Writing a stop down makes the gin look faster, not slower.** Bales an hour
+is worked out over the time the gin was actually running, so the downtime log is
+the denominator. That is the incentive the log needs to have if anybody is going
+to keep it.
+
 **The order the cotton wants and the order the yard can feed are not the same
 order.** A row is worked from one end, so a module spoiling in the middle of one
 waits for what is in front of it. Both orders are printed and the yard manager

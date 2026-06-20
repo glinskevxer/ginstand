@@ -9,10 +9,12 @@ import click
 
 from ginstand.cli.common import DATE, NUMBER, context, run_command
 from ginstand.ginning.allocate import allocate, plan
+from ginstand.ginning.downtime import efficiency, log_stop, season_minutes
 from ginstand.ginning.press import press
 from ginstand.ginning.restore import highest_allowed
 from ginstand.ginning.run import close_run, current_run, feed, open_run
 from ginstand.ginning.seed import record_load, seed_pounds
+from ginstand.model.downtime import StopReason, format_clock, parse_clock
 from ginstand.quality.sampling import explain, judge, sample_for
 from ginstand.quality.tolerance import control_for, outliers_in, season_control
 from ginstand.report.run import allocation_sheet, bale_sheet, feed_sheet, run_sheet
@@ -296,5 +298,91 @@ def run_sample(ctx: click.Context, ref: str, defects: int | None) -> None:
         if defects is not None:
             lines.append(f"{defects} bad: {judge(holder.book, ref, defects)}")
         return lines
+
+    run_command(work)
+
+
+@run.command("stop")
+@click.argument("ref")
+@click.option("--on", type=DATE, required=True, help="the day the gin stopped")
+@click.option("--at", "started", required=True, help="the time it stopped, as hh:mm")
+@click.option("--minutes", type=int, required=True, help="how long it was stopped")
+@click.option(
+    "--reason",
+    type=click.Choice([reason.value for reason in StopReason]),
+    required=True,
+    help="why it stopped",
+)
+@click.option("--note", default="", help="anything worth recording")
+@click.pass_context
+def run_stop(
+    ctx: click.Context,
+    ref: str,
+    on: date,
+    started: str,
+    minutes: int,
+    reason: str,
+    note: str,
+) -> None:
+    """Write a stop down against a run."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        with holder.book.writing() as writing:
+            stop = log_stop(
+                writing,
+                ref,
+                on,
+                parse_clock(started),
+                minutes,
+                StopReason(reason),
+                note,
+            )
+        return [stop.line]
+
+    run_command(work)
+
+
+@run.command("downtime")
+@click.argument("ref")
+@click.option("--shift", type=int, default=None, help="minutes in a shift")
+@click.pass_context
+def run_downtime(ctx: click.Context, ref: str, shift: int | None) -> None:
+    """A run's stops, and what they did to its bales an hour."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        figure = (
+            efficiency(holder.book, ref, shift)
+            if shift is not None
+            else efficiency(holder.book, ref)
+        )
+        lines = [figure.line]
+        lines.extend(f"  {stop.line}" for stop in holder.book.downtime.for_run(ref))
+        return lines
+
+    run_command(work)
+
+
+@run.command("stoppages")
+@click.option("--crop-year", type=int, required=True, help="which crop year")
+@click.pass_context
+def run_stoppages(ctx: click.Context, crop_year: int) -> None:
+    """Every minute the gin was stopped in a crop year, worst reason first."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        split = season_minutes(holder.book, crop_year)
+        if not split:
+            return ("no stop has been written down for this crop year",)
+        total = sum(split.values())
+        lines = [f"{total} minutes stopped in crop year {crop_year}"]
+        lines.extend(
+            f"  {reason:<20} {minutes:>6} min  {format_clock(minutes % 1440)}"
+            if minutes < 1440
+            else f"  {reason:<20} {minutes:>6} min"
+            for reason, minutes in split.items()
+        )
+        return tuple(lines)
 
     run_command(work)

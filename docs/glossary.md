@@ -64,6 +64,13 @@ The card graded the leaf eight.
 The classer found plastic at the heavy level. This is the gin's own rule.
 
 
+## ginstand.ginning.downtime
+
+**SHIFT_MINUTES** = `720`
+
+A twelve hour shift. The day a run's hours are counted against.
+
+
 ## ginstand.ginning.restore
 
 **MAX_ADDED_FRACTION** = `Decimal('0.020')`
