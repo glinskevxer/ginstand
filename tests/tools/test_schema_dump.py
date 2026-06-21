@@ -13,7 +13,7 @@ def test_the_document_on_disk_is_current() -> None:
     assert (repo_root() / DOCUMENT).read_text() == dump()
 
 
-def test_the_check_passes(
+def test_the_schema_check_passes_as_it_stands(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr("sys.argv", ["schema_dump", "--check"])

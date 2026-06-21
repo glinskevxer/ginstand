@@ -90,6 +90,6 @@ def test_the_crop_year_for_an_opening_day_is_offered_as_a_helper() -> None:
     assert GinRun.crop_year_for(date(2026, 1, 9)) == 2025
 
 
-def test_a_bad_gin_code_is_caught_at_construction() -> None:
+def test_a_gin_code_of_the_wrong_length_is_caught_at_construction() -> None:
     with pytest.raises(ValidationError, match="must be 5 digits"):
         a_run(gin_code="4120")

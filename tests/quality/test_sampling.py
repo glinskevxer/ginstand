@@ -84,7 +84,7 @@ def test_a_lot_with_no_bales_has_no_plan() -> None:
         plan_for(0)
 
 
-def test_a_bigger_sample_tolerates_a_bad_bale() -> None:
+def test_a_bigger_sample_tolerates_one_failed_bale() -> None:
     assert plan_for(4).verdict(1) is Verdict.REJECT
     assert plan_for(30).verdict(1) is Verdict.ACCEPT
     assert plan_for(400).verdict(1) is Verdict.ACCEPT

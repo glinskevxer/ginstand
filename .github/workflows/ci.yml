@@ -41,6 +41,7 @@ jobs:
       - run: python -m ginstand.tools.check_package
       - run: python -m ginstand.tools.check_sql
       - run: python -m ginstand.tools.check_exports
+      - run: python -m ginstand.tools.check_naming
 
   tests:
     runs-on: ubuntu-latest

@@ -82,7 +82,7 @@ def test_a_grade_that_is_not_on_the_chart_is_refused() -> None:
         parse_record(spoiled)
 
 
-def test_a_bad_bale_tag_is_refused() -> None:
+def test_a_tag_that_is_not_twelve_digits_is_refused() -> None:
     spoiled = "25412070006A" + RECORD[12:]
     with pytest.raises(ValidationError, match="must be 12 digits"):
         parse_record(spoiled)
@@ -102,7 +102,7 @@ def test_blank_lines_are_skipped() -> None:
     assert reading.clean
 
 
-def test_one_bad_record_does_not_stop_the_read() -> None:
+def test_one_unreadable_record_does_not_stop_the_read() -> None:
     second = RECORD[:11] + "2" + RECORD[12:]
     reading = read(f"{RECORD}\nrubbish\n{second}\n")
     assert len(reading.cards) == 2

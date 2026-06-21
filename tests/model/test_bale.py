@@ -30,7 +30,7 @@ def test_a_bale_keeps_its_tag_as_twelve_digits_however_it_was_typed() -> None:
     assert a_bale(tag=" 25 41207 00061 ").tag == "254120700061"
 
 
-def test_a_bad_tag_is_caught_at_construction() -> None:
+def test_a_tag_of_the_wrong_length_is_caught_at_construction() -> None:
     with pytest.raises(ValidationError, match="must be 12 digits"):
         a_bale(tag="2541207")
 

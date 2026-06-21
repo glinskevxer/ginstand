@@ -64,7 +64,7 @@ def test_the_first_producer_to_feed_gets_the_first_bales_pressed(book: Book) -> 
     assert owners["254120700004"] == "P-40"
 
 
-def test_planning_writes_nothing(book: Book) -> None:
+def test_planning_an_allocation_writes_nothing(book: Book) -> None:
     run_with(book, "GR-1", (("M-1", "FL-9", 30_000), ("M-2", "FL-5", 10_000)), 20)
     assert plan(book, "GR-1").for_producer("P-12").bales == 15
     assert not book.allocations.run_is_allocated("GR-1")

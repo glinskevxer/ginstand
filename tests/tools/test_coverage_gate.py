@@ -45,7 +45,7 @@ def test_a_total_under_the_floor_is_reported() -> None:
     assert "coverage is 85.00%" in problems[0]
 
 
-def test_one_bad_file_is_caught_behind_a_good_total() -> None:
+def test_one_thin_file_is_caught_behind_a_healthy_total() -> None:
     files = (FileCoverage("a.py", 99.0, 1), FileCoverage("b.py", 9.0, 40))
     problems = list(failures(95.0, files, 90.0, 70.0))
     assert len(problems) == 1
@@ -53,7 +53,7 @@ def test_one_bad_file_is_caught_behind_a_good_total() -> None:
     assert "40 lines uncovered" in problems[0]
 
 
-def test_every_failure_is_reported_not_just_the_first() -> None:
+def test_every_shortfall_is_reported_not_just_the_first() -> None:
     files = (FileCoverage("a.py", 10.0, 1), FileCoverage("b.py", 9.0, 40))
     assert len(list(failures(50.0, files, 90.0, 70.0))) == 3
 

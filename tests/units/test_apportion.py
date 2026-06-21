@@ -96,7 +96,7 @@ def test_a_proportion_can_be_asked_for_more_places() -> None:
     assert proportion(1, 3, places="0.000001") == Decimal("0.333333")
 
 
-def test_a_run_with_no_seed_cotton_has_no_turnout_rather_than_a_bad_one() -> None:
+def test_a_run_with_no_seed_cotton_has_no_turnout_rather_than_a_misleading_one() -> None:
     with pytest.raises(ValidationError, match="is zero"):
         proportion(0, 0)
 

@@ -74,7 +74,7 @@ def test_a_dry_run_reads_without_filing(ginned: Callable[..., Result], tmp_path:
     assert "nothing has been classed" in ginned("card", "list").output
 
 
-def test_a_bad_record_is_reported_with_its_line(
+def test_an_unreadable_record_is_reported_with_its_line(
     ginned: Callable[..., Result], tmp_path: Path
 ) -> None:
     path = tmp_path / "cards.txt"

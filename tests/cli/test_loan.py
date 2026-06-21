@@ -124,7 +124,7 @@ def test_the_mic_table_shows_the_premium_band(valued: Callable[..., Result]) -> 
 
 
 @pytest.mark.parametrize("table", ["leaf", "strength", "uniformity"])
-def test_every_table_prints(valued: Callable[..., Result], table: str) -> None:
+def test_every_schedule_table_prints_on_its_own(valued: Callable[..., Result], table: str) -> None:
     result = valued("loan", "schedule", "--crop-year", "2025", "--table", table)
     assert result.exit_code == 0
 

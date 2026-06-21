@@ -98,7 +98,7 @@ def test_a_tag_of_the_wrong_length_is_refused(written: str) -> None:
         parse_pbi(written)
 
 
-def test_sequence_zero_is_never_issued_so_it_reads_as_a_bad_tag() -> None:
+def test_sequence_zero_is_never_issued_so_it_reads_as_a_spoiled_tag() -> None:
     with pytest.raises(ValidationError, match="never issued"):
         parse_pbi("254120700000")
 

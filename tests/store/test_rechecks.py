@@ -91,7 +91,7 @@ def test_a_request_against_a_bale_nobody_pressed_is_refused(
         RecheckStore(ginned).request(a_request(999))
 
 
-def test_settling_writes_through(ginned: sqlite3.Connection) -> None:
+def test_settling_a_recheck_writes_through(ginned: sqlite3.Connection) -> None:
     store = RecheckStore(ginned)
     request = store.request(a_request())
     store.save(request.settle_on(date(2025, 11, 3), RecheckOutcome.CHANGED, "leaf 3 to 2"))

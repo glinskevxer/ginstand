@@ -13,7 +13,7 @@ def test_the_reference_on_disk_is_current() -> None:
     assert (repo_root() / DOCUMENT).read_text() == build()
 
 
-def test_the_check_passes(
+def test_the_reference_check_passes_as_it_stands(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr("sys.argv", ["build_docs", "--check"])

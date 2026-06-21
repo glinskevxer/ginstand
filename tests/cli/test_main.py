@@ -12,7 +12,7 @@ from ginstand.cli.main import cli
 from ginstand.store.migrations import latest_version
 
 
-def test_the_version_prints(runner: CliRunner) -> None:
+def test_the_version_prints_on_its_own(runner: CliRunner) -> None:
     result = runner.invoke(cli, ["--version"])
     assert result.exit_code == 0
     assert __version__ in result.output
@@ -52,7 +52,7 @@ def test_about_says_what_the_book_holds(gin: Callable[..., Result]) -> None:
     assert "0 producers, 0 modules, 0 bales" in result.output
 
 
-def test_a_bad_date_is_refused_before_anything_is_written(
+def test_a_date_in_the_wrong_order_is_refused_before_anything_is_written(
     runner: CliRunner, book_path: Path
 ) -> None:
     result = runner.invoke(cli, ["--book", str(book_path), "init", "--on", "04/08/2025"])

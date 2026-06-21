@@ -37,7 +37,7 @@ def test_adding_the_same_reference_twice_is_refused(kit: sqlite3.Connection) -> 
         )
 
 
-def test_retiring_writes_through(kit: sqlite3.Connection) -> None:
+def test_retiring_an_instrument_writes_through(kit: sqlite3.Connection) -> None:
     store = InstrumentStore(kit)
     store.save(
         Instrument(

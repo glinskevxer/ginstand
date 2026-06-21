@@ -59,7 +59,7 @@ def test_readings_are_quantised_to_the_one_place_the_card_carries() -> None:
     assert card.strength == Decimal("29.4")
 
 
-def test_a_bad_staple_or_leaf_is_caught_at_construction() -> None:
+def test_a_staple_or_leaf_off_the_card_is_caught_at_construction() -> None:
     with pytest.raises(ValidationError, match="staple"):
         a_card(staple=50)
     with pytest.raises(ValidationError, match="leaf grade"):

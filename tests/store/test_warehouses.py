@@ -119,7 +119,7 @@ def test_the_receipt_against_a_bale_can_be_looked_up(shipped: sqlite3.Connection
     assert found.number == "WR-10041"
 
 
-def test_releasing_writes_through(shipped: sqlite3.Connection) -> None:
+def test_releasing_a_receipt_writes_through(shipped: sqlite3.Connection) -> None:
     store = ReceiptStore(shipped)
     store.add(a_receipt("WR-10041"))
     store.save(store.get("WR-10041").release_on(date(2026, 2, 10)))

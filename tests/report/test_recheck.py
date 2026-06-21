@@ -69,7 +69,7 @@ def test_the_overall_rate_counts_every_outcome(book: Book) -> None:
     assert rate.answered == 3
 
 
-def test_the_success_rate_is_over_the_ones_the_office_read(book: Book) -> None:
+def test_the_moved_rate_is_over_the_ones_the_office_read(book: Book) -> None:
     carded(book)
     for sequence, outcome in (
         (1, RecheckOutcome.CHANGED),
