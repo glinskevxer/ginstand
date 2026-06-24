@@ -38,7 +38,9 @@ ginstand --book 2025.sqlite3 settle register GR-1 --on 2025-11-03
 The full command reference is in [docs/commands.md](docs/commands.md) and the
 book's schema is in [docs/schema.md](docs/schema.md). The words and the numbers
 the office argues about are in [docs/glossary.md](docs/glossary.md). All three
-are generated and CI fails if they go stale.
+are generated and CI fails if they go stale. Why the awkward parts are shaped
+the way they are is in [docs/design.md](docs/design.md), and CI checks that the
+code it names is still there.
 
 ## What is in here
 
@@ -138,6 +140,7 @@ python -m ginstand.tools.check_package
 python -m ginstand.tools.check_sql
 python -m ginstand.tools.check_exports
 python -m ginstand.tools.check_naming
+python -m ginstand.tools.check_design
 python -m ginstand.tools.schema_dump --check
 python -m ginstand.tools.build_docs --check
 python -m ginstand.tools.build_glossary --check
