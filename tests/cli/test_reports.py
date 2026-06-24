@@ -347,3 +347,17 @@ def test_the_book_check_prints_one_page(season: Callable[..., Result]) -> None:
     assert "Book check at 2025-10-20" in output
     assert "schema version" in output
     assert "queries" in output
+
+
+def test_the_moisture_report_carries_both_turnouts(
+    season: Callable[..., Result],
+) -> None:
+    output = season("report", "moisture", "--crop-year", "2025").output
+    assert "dry turnout" in output
+    assert "GR-1" in output
+
+
+def test_one_run_s_moisture_prints(season: Callable[..., Result]) -> None:
+    output = season("report", "moisture", "--crop-year", "2025", "--run", "GR-1").output
+    assert output.startswith("GR-1  in ")
+    assert "gap" in output

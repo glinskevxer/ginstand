@@ -908,6 +908,17 @@ ginstand report varieties
 
 - `--crop-year` — which crop year (required)
 
+### report moisture
+
+Moisture in and out, and the turnout worked out on dry weight.
+
+```
+ginstand report moisture
+```
+
+- `--crop-year` — which crop year (required)
+- `--run` — one run, rather than the season
+
 ### report plastic
 
 Where the plastic came from.

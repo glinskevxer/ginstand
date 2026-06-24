@@ -21,6 +21,8 @@ from ginstand.report.audit import audit_table, faults
 from ginstand.report.daily import full, sheet
 from ginstand.report.doctor import diagnose
 from ginstand.report.field import yield_table
+from ginstand.report.moisture import for_run as moisture_for_run
+from ginstand.report.moisture import moisture_table
 from ginstand.report.plastic import for_run, plastic_table, suspects
 from ginstand.report.recheck import overall, rate_table, turnaround
 from ginstand.report.table import Align, Column, Table
@@ -153,6 +155,22 @@ def report_varieties(ctx: click.Context, crop_year: int) -> None:
     """How each variety did, best lint per acre first."""
     holder = context(ctx)
     run_command(lambda: variety_table(holder.book, crop_year).render())
+
+
+@report.command("moisture")
+@click.option("--crop-year", type=int, required=True, help="which crop year")
+@click.option("--run", "run_ref", default="", help="one run, rather than the season")
+@click.pass_context
+def report_moisture(ctx: click.Context, crop_year: int, run_ref: str) -> None:
+    """Moisture in and out, and the turnout worked out on dry weight."""
+    holder = context(ctx)
+
+    def work() -> tuple[str, ...]:
+        if run_ref:
+            return (moisture_for_run(holder.book, run_ref).line,)
+        return moisture_table(holder.book, crop_year).render()
+
+    run_command(work)
 
 
 @report.command("plastic")
