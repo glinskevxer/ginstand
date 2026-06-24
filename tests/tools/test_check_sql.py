@@ -75,4 +75,9 @@ def test_every_allowed_interpolation_is_accepted(tmp_path: Path, allowed: str) -
 
 
 def test_the_allow_list_is_short_on_purpose() -> None:
-    assert len(ALLOWED) <= 8
+    assert len(ALLOWED) <= 10
+
+
+def test_the_importer_s_column_list_is_on_the_list() -> None:
+    assert "names" in ALLOWED
+    assert "placeholders" in ALLOWED

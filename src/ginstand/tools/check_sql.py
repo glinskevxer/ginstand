@@ -7,9 +7,10 @@ name in cotton country.
 
 Some interpolation is unavoidable, because sqlite will not take a table name as
 a parameter and the repository base builds its queries from the table it is for.
-So interpolation is allowed from a short list of things that are identifiers by
-construction, and refused from everything else. The list is here rather than
-per file, so adding to it is a decision somebody makes on purpose.
+So interpolation is allowed from a short list of things that cannot carry a
+value, and refused from everything else. The list is here rather than per file,
+so adding to it is a decision somebody makes on purpose, and every entry on it
+says where it comes from.
 """
 
 from __future__ import annotations
@@ -29,8 +30,17 @@ ALLOWED = {
     "table",
     "where",
     "MIGRATION_TABLE",
+    "names",
+    "placeholders",
 }
-"""Interpolations that are identifiers by construction rather than values."""
+"""Interpolations that cannot carry a value, whatever is in them.
+
+The first five are table and column names the code holds itself. The last two
+are the importer's, and they are on the list for a reason worth writing down:
+``names`` is a join of the columns sqlite reported for the table, and
+``placeholders`` is a run of question marks as long as that list. Neither one
+can carry a value, because neither one is built from a value: the row's cells go
+in as parameters underneath them."""
 
 
 def _interpolations(node: ast.JoinedStr) -> Iterator[str]:

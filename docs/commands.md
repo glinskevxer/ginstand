@@ -968,6 +968,14 @@ ginstand report book
 
 Looking after the book itself.
 
+### book load
+
+Read a folder of exported CSV back into an empty book.
+
+```
+ginstand book load <folder>
+```
+
 ### book check
 
 Ask everything worth asking about the book, in one page.

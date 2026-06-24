@@ -6,7 +6,9 @@ from collections.abc import Callable
 from pathlib import Path
 
 import pytest
-from click.testing import Result
+from click.testing import CliRunner, Result
+
+from ginstand.cli.main import cli
 
 
 def record(sequence: int, leaf: str = "3", colour: str = "31") -> str:
@@ -361,3 +363,26 @@ def test_one_run_s_moisture_prints(season: Callable[..., Result]) -> None:
     output = season("report", "moisture", "--crop-year", "2025", "--run", "GR-1").output
     assert output.startswith("GR-1  in ")
     assert "gap" in output
+
+
+def test_a_book_round_trips_through_the_files(
+    season: Callable[..., Result], runner: CliRunner, tmp_path: Path
+) -> None:
+    out = tmp_path / "csv"
+    season("report", "export", str(out))
+    fresh = tmp_path / "fresh.sqlite3"
+    runner.invoke(cli, ["--book", str(fresh), "init", "--on", "2025-08-04"])
+    result = runner.invoke(cli, ["--book", str(fresh), "book", "load", str(out)])
+    assert result.exit_code == 0
+    assert "tables," in result.output
+    assert "producer" in result.output
+
+
+def test_loading_into_a_book_with_records_in_it_is_refused(
+    season: Callable[..., Result], tmp_path: Path
+) -> None:
+    out = tmp_path / "csv"
+    season("report", "export", str(out))
+    result = season("book", "load", str(out))
+    assert result.exit_code != 0
+    assert "already has" in result.output

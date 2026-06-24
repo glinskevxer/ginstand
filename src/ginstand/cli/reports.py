@@ -28,6 +28,7 @@ from ginstand.report.recheck import overall, rate_table, turnaround
 from ginstand.report.table import Align, Column, Table
 from ginstand.report.variety import variety_table
 from ginstand.store.export import verify, write_all
+from ginstand.store.importer import read_all
 from ginstand.store.maintenance import backup, check, compact, counts
 
 
@@ -273,6 +274,24 @@ def report_book(ctx: click.Context) -> None:
 @click.group()
 def book() -> None:
     """Looking after the book itself."""
+
+
+@book.command("load")
+@click.argument("folder", type=click.Path(file_okay=False, exists=True, path_type=Path))
+@click.pass_context
+def book_load(ctx: click.Context, folder: Path) -> None:
+    """Read a folder of exported CSV back into an empty book."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        with holder.book.writing() as writing:
+            loaded = read_all(writing, folder)
+        return [
+            *(item.line for item in loaded),
+            f"{len(loaded)} tables, {sum(item.rows for item in loaded)} rows",
+        ]
+
+    run_command(work)
 
 
 @book.command("check")
