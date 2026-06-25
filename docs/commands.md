@@ -24,6 +24,14 @@ Say what this book is and what version wrote it.
 ginstand about
 ```
 
+## find
+
+Look something up when all you have is what is written on it.
+
+```
+ginstand find <text>
+```
+
 ## producer
 
 The producer register.

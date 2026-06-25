@@ -379,6 +379,17 @@ The book says two things that cannot both be true.
 Worth a look. Usually a run still in progress.
 
 
+## ginstand.report.find
+
+**MINIMUM_SEARCH** = `2`
+
+Below this a search matches everything, which is not a search.
+
+**SHOWN** = `25`
+
+How many results to print before saying how many more there are.
+
+
 ## ginstand.report.variety
 
 **MINIMUM_FIELDS** = `3`

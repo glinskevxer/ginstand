@@ -66,3 +66,26 @@ def test_the_group_help_lists_the_commands(runner: CliRunner) -> None:
     assert result.exit_code == 0
     assert "init" in result.output
     assert "about" in result.output
+
+
+def test_the_find_command_says_when_nothing_carries_it(
+    gin: Callable[..., Result],
+) -> None:
+    result = gin("find", "ZZZZ")
+    assert result.exit_code == 0
+    assert "nothing in the book carries that" in result.output
+
+
+def test_the_find_command_refuses_a_search_too_short(
+    gin: Callable[..., Result],
+) -> None:
+    result = gin("find", "P")
+    assert result.exit_code != 0
+    assert "at least 2 characters" in result.output
+
+
+def test_the_find_command_finds_a_producer(gin: Callable[..., Result]) -> None:
+    gin("producer", "add", "P-12", "Aldys Brothers")
+    output = gin("find", "aldys").output
+    assert "producer" in output
+    assert "P-12" in output

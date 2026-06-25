@@ -79,6 +79,18 @@ def about(ctx: click.Context) -> None:
     run_command(work)
 
 
+@cli.command()
+@click.argument("text")
+@click.pass_context
+def find(ctx: click.Context, text: str) -> None:
+    """Look something up when all you have is what is written on it."""
+    from ginstand.cli.common import context, run_command
+    from ginstand.report.find import result_table
+
+    holder = context(ctx)
+    run_command(lambda: result_table(holder.book, text).render())
+
+
 def _register() -> None:
     """Add every command group to the top level command."""
     from ginstand.cli import (
