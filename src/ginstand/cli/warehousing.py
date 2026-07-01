@@ -10,6 +10,7 @@ import click
 from ginstand.charges.published import storage_for
 from ginstand.cli.common import DATE, context, run_command
 from ginstand.model.warehouse import Warehouse
+from ginstand.report.position import position_table
 from ginstand.report.table import Align, Column, Table
 from ginstand.units.money import Money, format_money
 from ginstand.warehouse.ewr import build
@@ -251,3 +252,12 @@ def receipt_export(ctx: click.Context, house: str, on: date, out: Path | None) -
         return (f"wrote {len(lines) - 2} records to {out}",)
 
     run_command(work)
+
+
+@warehouse.command("position")
+@click.option("--on", type=DATE, required=True, help="the day to price it at")
+@click.pass_context
+def warehouse_position(ctx: click.Context, on: date) -> None:
+    """What is in store, whose it is, and what it is costing to keep."""
+    holder = context(ctx)
+    run_command(lambda: position_table(holder.book, on).render())

@@ -622,6 +622,16 @@ Every warehouse, with what it is holding.
 ginstand warehouse list
 ```
 
+### warehouse position
+
+What is in store, whose it is, and what it is costing to keep.
+
+```
+ginstand warehouse position
+```
+
+- `--on` — the day to price it at (required)
+
 ## receipt
 
 Warehouse receipts.

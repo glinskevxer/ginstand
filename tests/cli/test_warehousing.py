@@ -204,3 +204,12 @@ def test_an_unlicensed_warehouse_cannot_export(stored: Callable[..., Result]) ->
     result = stored("receipt", "export", "WH-2", "--on", "2025-10-30")
     assert result.exit_code != 0
     assert "no licensed code" in result.output
+
+
+def test_the_position_prints_what_is_in_store(stored: Callable[..., Result]) -> None:
+    assert "nothing is in store" in stored("warehouse", "position", "--on", "2026-01-30").output
+    stored("receipt", "issue", "254120700001", "--warehouse", "WH-1", "--on", "2025-10-30")
+    output = stored("warehouse", "position", "--on", "2026-01-30").output
+    assert "In store at 2026-01-30" in output
+    assert "WH-1" in output
+    assert "P-12" in output
