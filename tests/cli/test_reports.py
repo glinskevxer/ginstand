@@ -386,3 +386,9 @@ def test_loading_into_a_book_with_records_in_it_is_refused(
     result = season("book", "load", str(out))
     assert result.exit_code != 0
     assert "already has" in result.output
+
+
+def test_the_comparison_prints_both_years(season: Callable[..., Result]) -> None:
+    output = season("report", "compare", "--earlier", "2024", "--later", "2025").output
+    assert "Crop year 2024 against 2025" in output
+    assert "bales" in output

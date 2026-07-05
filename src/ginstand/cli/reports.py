@@ -18,6 +18,7 @@ from ginstand.quality.calibration import (
 )
 from ginstand.report import quality, season
 from ginstand.report.audit import audit_table, faults
+from ginstand.report.compare import compare
 from ginstand.report.daily import full, sheet
 from ginstand.report.doctor import diagnose
 from ginstand.report.field import yield_table
@@ -122,6 +123,16 @@ def report_audit(ctx: click.Context, on: date, faults_only: bool) -> None:
         return audit_table(holder.book, on).render()
 
     run_command(work)
+
+
+@report.command("compare")
+@click.option("--earlier", type=int, required=True, help="the older crop year")
+@click.option("--later", type=int, required=True, help="the newer crop year")
+@click.pass_context
+def report_compare(ctx: click.Context, earlier: int, later: int) -> None:
+    """Two crop years beside each other."""
+    holder = context(ctx)
+    run_command(lambda: compare(holder.book, earlier, later).render())
 
 
 @report.command("day")

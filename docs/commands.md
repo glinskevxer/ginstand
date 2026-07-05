@@ -895,6 +895,17 @@ ginstand report audit
 - `--on` — the day to audit at (required)
 - `--faults-only` — leave out the queries
 
+### report compare
+
+Two crop years beside each other.
+
+```
+ginstand report compare
+```
+
+- `--earlier` — the older crop year (required)
+- `--later` — the newer crop year (required)
+
 ### report day
 
 Everything that happened on one day.
