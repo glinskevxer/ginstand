@@ -32,6 +32,7 @@ def test_the_package_layers_point_one_way() -> None:
         ("ginstand.report.table", 5),
         ("ginstand.cli.main", 6),
         ("ginstand.tools.base", 7),
+        ("ginstand.invariants", 4),
         ("ginstand", 1),
     ],
 )

@@ -997,6 +997,14 @@ ginstand report book
 
 Looking after the book itself.
 
+### book laws
+
+Check the package's own arithmetic laws across a spread of inputs.
+
+```
+ginstand book laws
+```
+
 ### book load
 
 Read a folder of exported CSV back into an empty book.

@@ -44,12 +44,13 @@ LAYERS: dict[str, int] = {
     "warehouse": 4,
     "settle": 4,
     "quality": 4,
+    "invariants": 4,
     "report": 5,
     "cli": 6,
     "tools": 7,
 }
 
-ROOT_MODULES = {"errors", "ids", "season"}
+ROOT_MODULES = {"errors", "ids", "season", "invariants"}
 """The modules that sit at the package root rather than in a subpackage."""
 
 

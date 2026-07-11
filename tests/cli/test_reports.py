@@ -392,3 +392,9 @@ def test_the_comparison_prints_both_years(season: Callable[..., Result]) -> None
     output = season("report", "compare", "--earlier", "2024", "--later", "2025").output
     assert "Crop year 2024 against 2025" in output
     assert "bales" in output
+
+
+def test_the_arithmetic_laws_hold(season: Callable[..., Result]) -> None:
+    result = season("book", "laws")
+    assert result.exit_code == 0
+    assert "every law holds" in result.output

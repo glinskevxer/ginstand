@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 
 from ginstand.cli.common import DATE, NUMBER, context, run_command
+from ginstand.invariants import failures as law_failures
 from ginstand.model.instrument import Instrument, InstrumentKind
 from ginstand.quality.calibration import (
     due_on,
@@ -285,6 +286,21 @@ def report_book(ctx: click.Context) -> None:
 @click.group()
 def book() -> None:
     """Looking after the book itself."""
+
+
+@book.command("laws")
+@click.pass_context
+def book_laws(ctx: click.Context) -> None:
+    """Check the package's own arithmetic laws across a spread of inputs."""
+    context(ctx)
+
+    def work() -> tuple[str, ...]:
+        broken = tuple(law_failures())
+        if not broken:
+            return ("every law holds",)
+        return (f"{len(broken)} laws broken", *broken)
+
+    run_command(work)
 
 
 @book.command("load")

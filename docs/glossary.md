@@ -118,6 +118,29 @@ Two to twenty four characters, upper case, digits and inner dashes.
 One to eight characters. A yard row is called A, or 12, or NORTH-3.
 
 
+## ginstand.invariants
+
+**AMOUNTS** = `(0, 1, 3, 7, 100, 10001, 123457, -1, -7, -100003)`
+
+Amounts in cents, including the negatives a producer owes.
+
+**CARRY_PLACES** = `Decimal('0.000001')`
+
+What one entitlement is rounded to. The carries cancel to within this.
+
+**COUNTS** = `(0, 1, 2, 3, 7, 13, 61, 100, 999)`
+
+Unit counts to split, including the ones that divide badly.
+
+**SHARES** = `('0.25', '0.3333', '0.5', '0.6667', '0.01', '0.99')`
+
+Landlord shares, including the ones that do not divide.
+
+**WEIGHTS**
+
+Weight splits that have caught a rounding mistake somewhere.
+
+
 ## ginstand.loan.schedule
 
 **WHITE_FAMILY** = `(ColorGroup.WHITE, ColorGroup.LIGHT_SPOTTED)`
