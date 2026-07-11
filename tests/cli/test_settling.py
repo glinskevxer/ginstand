@@ -313,3 +313,14 @@ def test_closing_twice_is_refused(settled: Callable[..., Result], tmp_path: Path
     again = settled("settle", "close", "--crop-year", "2025", "--on", "2026-03-02")
     assert again.exit_code != 0
     assert "was already closed" in again.output
+
+
+def test_the_statements_are_written_one_per_producer(
+    settled: Callable[..., Result], tmp_path: Path
+) -> None:
+    out = tmp_path / "statements"
+    result = settled("settle", "statements", "GR-1", "--on", "2025-11-03", "--out", str(out))
+    assert result.exit_code == 0
+    assert "2 statements in" in result.output
+    assert (out / "GR-1-P-12.txt").is_file()
+    assert (out / "GR-1-P-40.txt").is_file()

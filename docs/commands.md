@@ -775,6 +775,17 @@ ginstand settle season <producer>
 
 - `--crop-year` — which crop year (required)
 
+### settle statements
+
+Print a run's statements, one file per producer.
+
+```
+ginstand settle statements <run_ref>
+```
+
+- `--on` — the day they are issued (required)
+- `--out` — the folder to write them into (required)
+
 ## account
 
 The producer account: settlements, adjustments and payments.

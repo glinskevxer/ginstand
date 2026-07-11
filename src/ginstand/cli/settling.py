@@ -3,11 +3,13 @@
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 
 import click
 
 from ginstand.charges.published import seed_price_for, tariff_for
 from ginstand.cli.common import DATE, context, parse_amount, run_command
+from ginstand.report.batch import write as write_statements
 from ginstand.report.producer import page
 from ginstand.report.settlement import producer_page, reconcile, register
 from ginstand.report.table import Align, Column, Table
@@ -356,3 +358,32 @@ def settle_season(ctx: click.Context, producer: str, crop_year: int) -> None:
     """One producer's whole season on one page."""
     holder = context(ctx)
     run_command(lambda: page(holder.book, producer, crop_year))
+
+
+@settle.command("statements")
+@click.argument("run_ref")
+@click.option("--on", type=DATE, required=True, help="the day they are issued")
+@click.option(
+    "--out",
+    type=click.Path(file_okay=False, path_type=Path),
+    required=True,
+    help="the folder to write them into",
+)
+@click.pass_context
+def settle_statements(ctx: click.Context, run_ref: str, on: date, out: Path) -> None:
+    """Print a run's statements, one file per producer."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        crop_year = holder.book.runs.get(run_ref).crop_year
+        printed = write_statements(
+            holder.book,
+            run_ref,
+            tariff_for(crop_year),
+            seed_price_for(crop_year),
+            on,
+            out,
+        )
+        return [*(item.line for item in printed), f"{len(printed)} statements in {out}"]
+
+    run_command(work)
