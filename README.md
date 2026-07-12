@@ -141,6 +141,7 @@ python -m ginstand.tools.check_sql
 python -m ginstand.tools.check_exports
 python -m ginstand.tools.check_naming
 python -m ginstand.tools.check_design
+python -m ginstand.tools.check_workflow
 python -m ginstand.tools.schema_dump --check
 python -m ginstand.tools.build_docs --check
 python -m ginstand.tools.build_glossary --check
