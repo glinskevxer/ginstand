@@ -486,6 +486,13 @@ Hundredweight. The ginning tariff and the seed contract both price per cwt.
 Past the dryers' range. A module this wet goes back out rather than through.
 
 
+## ginstand.yard.intake
+
+**COLUMNS**
+
+The header the weighbridge writes, in order.
+
+
 ## ginstand.yard.order
 
 **RISK_LIMIT** = `Decimal('30.0')`

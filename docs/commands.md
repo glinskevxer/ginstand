@@ -274,6 +274,16 @@ ginstand yard feed-order
 
 - `--on` — the day to work it out at (required)
 
+### yard intake
+
+Weigh in a day's modules off the weighbridge file.
+
+```
+ginstand yard intake <path>
+```
+
+- `--tickets` — print a line per module as well
+
 ## run
 
 Gin runs.

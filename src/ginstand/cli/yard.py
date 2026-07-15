@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 from decimal import Decimal
+from pathlib import Path
 
 import click
 
@@ -13,6 +14,7 @@ from ginstand.model.module import Module, ModuleKind, WrapKind
 from ginstand.report.yard import ginning_queue, holds, standing
 from ginstand.units.weight import format_pounds
 from ginstand.yard.holds import lift, place, suggest
+from ginstand.yard.intake import read as read_intake
 from ginstand.yard.order import entry_for
 from ginstand.yard.places import (
     buried,
@@ -284,5 +286,25 @@ def yard_feed_order(ctx: click.Context, on: date) -> None:
         lines = [f"{len(ordered)} modules, {moved} out of the order the cotton wants"]
         lines.extend(f"  {index:>3}  {tag}" for index, tag in enumerate(ordered, start=1))
         return tuple(lines)
+
+    run_command(work)
+
+
+@yard.command("intake")
+@click.argument("path", type=click.Path(exists=True, dir_okay=False, path_type=Path))
+@click.option("--tickets", is_flag=True, help="print a line per module as well")
+@click.pass_context
+def yard_intake(ctx: click.Context, path: Path, tickets: bool) -> None:
+    """Weigh in a day's modules off the weighbridge file."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        with holder.book.writing() as writing:
+            intake = read_intake(writing, path.read_text())
+        lines = [intake.summary]
+        if tickets:
+            lines.extend(f"  {ticket.line}" for ticket in intake.tickets)
+        lines.extend(f"  {problem.line}" for problem in intake.problems)
+        return lines
 
     run_command(work)

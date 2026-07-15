@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from pathlib import Path
 
 import pytest
 from click.testing import Result
@@ -188,3 +189,42 @@ def test_the_feed_order_counts_what_is_out_of_place(
     yard("yard", "put", "M-2", "A", "--on", "2025-10-02")
     output = yard("yard", "feed-order", "--on", "2025-10-12").output
     assert "2 modules, 2 out of the order the cotton wants" in output
+
+
+def test_a_days_file_is_weighed_in(yard: Callable[..., Result], tmp_path: Path) -> None:
+    header = "tag,field,kind,wrap,harvested,received,gross,tare,moisture"
+    row = "{},FL-9,rectangular,tarp,2025-09-30,2025-10-02,48200,26140,9.4"
+    path = tmp_path / "scale.csv"
+    path.write_text("\n".join([header, row.format("M-1"), row.format("M-2")]) + "\n")
+    result = yard("yard", "intake", str(path))
+    assert result.exit_code == 0
+    assert "2 modules in, 44,120 lb, 0 problems" in result.output
+
+
+def test_the_intake_can_print_a_line_per_module(
+    yard: Callable[..., Result], tmp_path: Path
+) -> None:
+    header = "tag,field,kind,wrap,harvested,received,gross,tare,moisture"
+    row = "M-1,FL-9,rectangular,tarp,2025-09-30,2025-10-02,48200,26140,9.4"
+    path = tmp_path / "scale.csv"
+    path.write_text(f"{header}\n{row}\n")
+    output = yard("yard", "intake", str(path), "--tickets").output
+    assert "Aldys Brothers" in output
+
+
+def test_a_row_that_will_not_go_in_is_printed(yard: Callable[..., Result], tmp_path: Path) -> None:
+    header = "tag,field,kind,wrap,harvested,received,gross,tare,moisture"
+    row = "M-1,FL-99,rectangular,tarp,2025-09-30,2025-10-02,48200,26140,9.4"
+    path = tmp_path / "scale.csv"
+    path.write_text(f"{header}\n{row}\n")
+    output = yard("yard", "intake", str(path)).output
+    assert "1 problems" in output
+    assert "no field with reference FL-99" in output
+
+
+def test_a_file_with_no_header_is_refused(yard: Callable[..., Result], tmp_path: Path) -> None:
+    path = tmp_path / "scale.csv"
+    path.write_text("")
+    result = yard("yard", "intake", str(path))
+    assert result.exit_code != 0
+    assert "has no header row" in result.output
