@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 
+from ginstand.ginning.season import runs_pressed
 from ginstand.grades.matter import ExtraneousKind
 from ginstand.model.classing import Classing
 from ginstand.report.table import Align, Column, Table
@@ -109,11 +110,7 @@ def for_run(book: Book, run_ref: str) -> RunPlastic:
 
 def season(book: Book, crop_year: int) -> tuple[RunPlastic, ...]:
     """Every run in a crop year that saw plastic, worst rate first."""
-    found = [
-        for_run(book, run.ref)
-        for run in book.runs.for_crop_year(crop_year)
-        if book.bales.count_for_run(run.ref)
-    ]
+    found = [for_run(book, run.ref) for run in runs_pressed(book, crop_year)]
     return tuple(sorted((item for item in found if item.flagged), key=lambda i: -i.rate))
 
 

@@ -23,6 +23,7 @@ from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 
 from ginstand.errors import StateError
+from ginstand.ginning.season import runs_pressed
 from ginstand.model.bale import Bale
 from ginstand.store.book import Book
 
@@ -129,8 +130,5 @@ def outliers_in(book: Book, run_ref: str) -> tuple[tuple[str, int, Decimal], ...
 
 def season_control(book: Book, crop_year: int) -> tuple[Control, ...]:
     """Every run in a crop year that has pressed something, worst first."""
-    found = []
-    for run in book.runs.for_crop_year(crop_year):
-        if book.bales.count_for_run(run.ref):
-            found.append(control_for(book, run.ref))
+    found = [control_for(book, run.ref) for run in runs_pressed(book, crop_year)]
     return tuple(sorted(found, key=lambda item: -abs(item.off_target)))

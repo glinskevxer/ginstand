@@ -11,7 +11,7 @@ from ginstand.errors import StateError
 from ginstand.ginning.allocate import allocate
 from ginstand.ginning.press import press
 from ginstand.ginning.run import close_run, feed, open_run
-from ginstand.ginning.season import totals
+from ginstand.ginning.season import runs_fed, runs_pressed, totals
 from ginstand.ginning.seed import record_load
 from ginstand.store.book import Book
 from ginstand.yard.receiving import receive
@@ -93,3 +93,27 @@ def test_lint_per_bale_needs_a_bale(book: Book) -> None:
     a_run(book, "GR-1", date(2025, 10, 14), 20_000, 0, close=False)
     with pytest.raises(StateError, match="has no bales"):
         assert totals(book, 2025).lint_per_bale
+
+
+def test_a_run_with_nothing_fed_into_it_is_not_fed(book: Book) -> None:
+    a_run(book, "GR-1", date(2025, 10, 14), 20_000, 14)
+    open_run(book, "GR-2", "41207", date(2025, 10, 20))
+    assert [run.ref for run in runs_fed(book, 2025)] == ["GR-1"]
+
+
+def test_a_run_that_has_pressed_nothing_is_not_pressed(book: Book) -> None:
+    a_run(book, "GR-1", date(2025, 10, 14), 20_000, 0, close=False)
+    assert runs_fed(book, 2025)
+    assert runs_pressed(book, 2025) == ()
+
+
+def test_the_two_sets_are_not_the_same_set(book: Book) -> None:
+    a_run(book, "GR-1", date(2025, 10, 14), 20_000, 14)
+    a_run(book, "GR-2", date(2025, 10, 20), 10_000, 0, close=False)
+    assert [run.ref for run in runs_fed(book, 2025)] == ["GR-1", "GR-2"]
+    assert [run.ref for run in runs_pressed(book, 2025)] == ["GR-1"]
+
+
+def test_a_crop_year_with_no_runs_has_neither(book: Book) -> None:
+    assert runs_fed(book, 2019) == ()
+    assert runs_pressed(book, 2019) == ()

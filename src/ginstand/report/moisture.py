@@ -22,6 +22,7 @@ from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 
 from ginstand.errors import StateError
+from ginstand.ginning.season import runs_fed
 from ginstand.report.table import Align, Column, Table
 from ginstand.store.book import Book
 from ginstand.units.apportion import proportion
@@ -113,10 +114,7 @@ def for_run(book: Book, run_ref: str) -> RunMoisture:
 
 def season(book: Book, crop_year: int) -> tuple[RunMoisture, ...]:
     """Every run in a crop year with cotton in it, widest gap first."""
-    found = []
-    for run in book.runs.for_crop_year(crop_year):
-        if book.runs.modules_in(run.ref):
-            found.append(for_run(book, run.ref))
+    found = [for_run(book, run.ref) for run in runs_fed(book, crop_year)]
     return tuple(sorted(found, key=lambda item: -abs(item.gap)))
 
 

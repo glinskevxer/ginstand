@@ -16,6 +16,7 @@ from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 
 from ginstand.errors import StateError
+from ginstand.ginning.season import runs_fed
 from ginstand.report.table import Align, Column, Table
 from ginstand.store.book import Book
 from ginstand.units.apportion import apportion, proportion
@@ -67,10 +68,8 @@ def yields(book: Book, crop_year: int) -> tuple[FieldYield, ...]:
     modules: dict[str, int] = {}
     lint: dict[str, int] = {}
 
-    for run in book.runs.for_crop_year(crop_year):
+    for run in runs_fed(book, crop_year):
         tags = book.runs.modules_in(run.ref)
-        if not tags:
-            continue
         by_field: dict[str, int] = {}
         for tag in tags:
             module = book.modules.get(tag)

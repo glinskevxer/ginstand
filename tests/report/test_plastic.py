@@ -177,3 +177,9 @@ def test_the_table_carries_the_fields_and_the_note(book: Book) -> None:
     text = plastic_table(book, 2025).text()
     assert "GR-1" in text
     assert "FL-9" in text
+
+
+def test_a_run_that_pressed_nothing_is_left_off(book: Book) -> None:
+    """This report wants the pressed set, because a plastic note is on a bale."""
+    a_run(book, "GR-1", (("M-1", "FL-9", True),), (), bales=0)
+    assert season(book, 2025) == ()

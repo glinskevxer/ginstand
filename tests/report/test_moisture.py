@@ -146,3 +146,11 @@ def test_the_table_carries_both_turnouts(book: Book) -> None:
     assert "wet turnout" in text
     assert "dry turnout" in text
     assert "GR-1" in text
+
+
+def test_a_run_that_pressed_nothing_still_has_moisture_in(book: Book) -> None:
+    """Fed and pressed are different sets, and this report wants the fed one."""
+    a_run(book, "GR-1", 20_000, "11.0", 0)
+    found = season(book, 2025)
+    assert [item.run for item in found] == ["GR-1"]
+    assert found[0].bales == 0

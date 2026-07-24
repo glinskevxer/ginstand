@@ -17,8 +17,31 @@ from decimal import Decimal
 
 from ginstand.errors import StateError
 from ginstand.ginning.seed import seed_pounds
+from ginstand.model.ginrun import GinRun
 from ginstand.store.book import Book
 from ginstand.units.apportion import proportion
+
+
+def runs_fed(book: Book, crop_year: int) -> tuple[GinRun, ...]:
+    """Every run in a crop year with seed cotton in it.
+
+    Four reports were each walking the crop year and asking the same question a
+    slightly different way, and two of them disagreed about a run that had been
+    opened and closed with nothing fed into it.
+    """
+    return tuple(run for run in book.runs.for_crop_year(crop_year) if book.runs.modules_in(run.ref))
+
+
+def runs_pressed(book: Book, crop_year: int) -> tuple[GinRun, ...]:
+    """Every run in a crop year that has a bale off it.
+
+    Not the same set as :func:`runs_fed`. A run that is still going has cotton in
+    it and may have pressed nothing yet, and a report about bales should leave it
+    out while a report about cotton should not.
+    """
+    return tuple(
+        run for run in book.runs.for_crop_year(crop_year) if book.bales.count_for_run(run.ref)
+    )
 
 
 @dataclass(frozen=True, slots=True)

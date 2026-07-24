@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from decimal import ROUND_HALF_UP, Decimal
 
+from ginstand.ginning.season import runs_pressed
 from ginstand.loan.schedule import Schedule, schedule_for
 from ginstand.loan.value import value_bale
 from ginstand.report.field import yields
@@ -140,7 +141,7 @@ def _ground(book: Book, crop_year: int) -> dict[str, _Ground]:
 
 def _classing(book: Book, crop_year: int, schedule: Schedule) -> dict[str, _Classing]:
     found: dict[str, _Classing] = {}
-    for run in book.runs.for_crop_year(crop_year):
+    for run in runs_pressed(book, crop_year):
         name = variety_of_run(book, run.ref)
         if name is None:
             continue
