@@ -464,3 +464,30 @@ def test_the_laws_can_be_run_quietly(season: Callable[..., Result]) -> None:
     result = season("book", "laws", "--quiet")
     assert result.exit_code == 0
     assert result.output == ""
+
+
+def test_an_instrument_can_be_retired(season: Callable[..., Result]) -> None:
+    season("instrument", "add", "SC-1", "Weighbridge", "--kind", "truck scale")
+    result = season("instrument", "retire", "SC-1", "--on", "2026-01-01")
+    assert result.exit_code == 0
+    assert "retired SC-1 Weighbridge on 2026-01-01" in result.output
+
+
+def test_retiring_twice_is_refused(season: Callable[..., Result]) -> None:
+    season("instrument", "add", "SC-1", "Weighbridge", "--kind", "truck scale")
+    season("instrument", "retire", "SC-1", "--on", "2026-01-01")
+    again = season("instrument", "retire", "SC-1", "--on", "2026-02-01")
+    assert again.exit_code != 0
+    assert "was retired on 2026-01-01" in again.output
+
+
+def test_a_retired_instrument_drops_off_the_standing(
+    season: Callable[..., Result],
+) -> None:
+    season("instrument", "add", "SC-1", "Weighbridge", "--kind", "truck scale")
+    assert "never" in season("instrument", "standing", "--on", "2026-02-01").output
+    season("instrument", "retire", "SC-1", "--on", "2026-01-01")
+    assert (
+        "every instrument is covered"
+        in season("instrument", "standing", "--on", "2026-02-01").output
+    )

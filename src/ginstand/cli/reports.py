@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 
 from ginstand.cli.common import DATE, NUMBER, context, run_checked, run_command
+from ginstand.errors import StateError
 from ginstand.invariants import failures as law_failures
 from ginstand.model.instrument import Instrument, InstrumentKind
 from ginstand.quality.calibration import (
@@ -452,6 +453,33 @@ def instrument_check(
             f"{logged.instrument} {verdict} at {logged.error}, tolerance {item.tolerance}",
             f"next check due {logged.due(item.interval).isoformat()}",
         ]
+
+    run_command(work)
+
+
+@instrument.command("retire")
+@click.argument("ref")
+@click.option("--on", type=DATE, required=True, help="the day it went out of service")
+@click.pass_context
+def instrument_retire(ctx: click.Context, ref: str, on: date) -> None:
+    """Take an instrument out of service."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        standing = holder.book.instruments.get(ref)
+        if not standing.in_service:
+            raise StateError(f"instrument {standing.ref} was retired on {standing.retired}")
+        with holder.book.writing() as writing:
+            writing.instruments.save(
+                Instrument(
+                    ref=standing.ref,
+                    kind=standing.kind,
+                    description=standing.description,
+                    serial=standing.serial,
+                    retired=on,
+                )
+            )
+        return [f"retired {standing.ref} {standing.description} on {on.isoformat()}"]
 
     run_command(work)
 

@@ -99,3 +99,31 @@ def test_the_show_command_lists_a_producers_leases(gin: Callable[..., Result]) -
 
 def test_an_empty_lease_register_says_so(gin: Callable[..., Result]) -> None:
     assert "no leases yet" in gin("lease", "list").output
+
+
+def test_an_edit_changes_only_what_was_given(gin: Callable[..., Result]) -> None:
+    gin("producer", "add", "P-12", "Aldys Brothers", "--phone", "555 0143")
+    result = gin("producer", "edit", "P-12", "--name", "Aldys Bros")
+    assert result.exit_code == 0
+    assert "changed producer P-12 Aldys Bros" in result.output
+    output = gin("producer", "show", "P-12").output
+    assert "555 0143" in output
+
+
+def test_an_edit_that_changes_nothing_says_so(gin: Callable[..., Result]) -> None:
+    gin("producer", "add", "P-12", "Aldys Brothers")
+    assert "is unchanged" in gin("producer", "edit", "P-12").output
+
+
+def test_editing_somebody_who_is_not_there_is_refused(
+    gin: Callable[..., Result],
+) -> None:
+    result = gin("producer", "edit", "P-99", "--name", "Nobody")
+    assert result.exit_code != 0
+    assert "no producer with reference P-99" in result.output
+
+
+def test_an_edit_can_enrol_a_producer_for_the_loan(gin: Callable[..., Result]) -> None:
+    gin("producer", "add", "P-12", "Aldys Brothers")
+    gin("producer", "edit", "P-12", "--ccc", "A4471")
+    assert "yes" in gin("producer", "list").output

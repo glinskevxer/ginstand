@@ -152,3 +152,44 @@ def lease_list(ctx: click.Context) -> None:
         ).render()
 
     run_command(work)
+
+
+@producer.command("edit")
+@click.argument("ref")
+@click.option("--name", default=None, help="a new name")
+@click.option("--address", default=None, help="a new address")
+@click.option("--phone", default=None, help="a new telephone number")
+@click.option("--ccc", "ccc_number", default=None, help="a new loan farm number")
+@click.pass_context
+def producer_edit(
+    ctx: click.Context,
+    ref: str,
+    name: str | None,
+    address: str | None,
+    phone: str | None,
+    ccc_number: str | None,
+) -> None:
+    """Change what the book says about a producer.
+
+    Only what is given changes. An option left off keeps what the book has,
+    because an edit that blanks the address because nobody typed one is how a
+    register ends up empty a field at a time.
+    """
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        standing = holder.book.producers.get(ref)
+        changed = Producer(
+            ref=standing.ref,
+            name=standing.name if name is None else name,
+            address=standing.address if address is None else address,
+            phone=standing.phone if phone is None else phone,
+            ccc_number=standing.ccc_number if ccc_number is None else ccc_number,
+        )
+        if changed == standing:
+            return [f"{standing.ref} is unchanged"]
+        with holder.book.writing() as writing:
+            writing.producers.update(changed)
+        return [f"changed producer {changed.ref} {changed.name}"]
+
+    run_command(work)

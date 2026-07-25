@@ -64,6 +64,19 @@ One producer, with their farms and leases.
 ginstand producer show <ref>
 ```
 
+### producer edit
+
+Change what the book says about a producer.
+
+```
+ginstand producer edit <ref>
+```
+
+- `--name` — a new name
+- `--address` — a new address
+- `--phone` — a new telephone number
+- `--ccc` — a new loan farm number
+
 ## lease
 
 The lease register.
@@ -283,6 +296,20 @@ ginstand yard intake <path>
 ```
 
 - `--tickets` — print a line per module as well
+
+### yard correct
+
+Correct a module's scale ticket.
+
+```
+ginstand yard correct <tag>
+```
+
+- `--gross` — a corrected gross weight
+- `--tare` — a corrected tare weight
+- `--moisture` — a corrected reading
+- `--field` — the field it really came off
+- `--note` — why the ticket was corrected
 
 ## run
 
@@ -1107,6 +1134,16 @@ ginstand instrument check <ref>
 - `--error` — how far out it read (required)
 - `--by` — who checked it
 - `--note` — anything worth recording
+
+### instrument retire
+
+Take an instrument out of service.
+
+```
+ginstand instrument retire <ref>
+```
+
+- `--on` — the day it went out of service (required)
 
 ### instrument standing
 

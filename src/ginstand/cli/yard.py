@@ -9,6 +9,7 @@ from pathlib import Path
 import click
 
 from ginstand.cli.common import DATE, NUMBER, context, run_command
+from ginstand.errors import StateError
 from ginstand.model.hold import HoldReason
 from ginstand.model.module import Module, ModuleKind, WrapKind
 from ginstand.report.yard import ginning_queue, holds, standing
@@ -306,5 +307,63 @@ def yard_intake(ctx: click.Context, path: Path, tickets: bool) -> None:
             lines.extend(f"  {ticket.line}" for ticket in intake.tickets)
         lines.extend(f"  {problem.line}" for problem in intake.problems)
         return lines
+
+    run_command(work)
+
+
+@yard.command("correct")
+@click.argument("tag")
+@click.option("--gross", type=int, default=None, help="a corrected gross weight")
+@click.option("--tare", type=int, default=None, help="a corrected tare weight")
+@click.option("--moisture", type=NUMBER, default=None, help="a corrected reading")
+@click.option("--field", "field_ref", default=None, help="the field it really came off")
+@click.option("--note", default=None, help="why the ticket was corrected")
+@click.pass_context
+def yard_correct(
+    ctx: click.Context,
+    tag: str,
+    gross: int | None,
+    tare: int | None,
+    moisture: Decimal | None,
+    field_ref: str | None,
+    note: str | None,
+) -> None:
+    """Correct a module's scale ticket.
+
+    A module that has already been ginned cannot be corrected, because its
+    weight is in a turnout and an allocation by then and changing it silently
+    would move both.
+    """
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        standing = holder.book.modules.get(tag)
+        run = holder.book.runs.run_of(standing.tag)
+        if run is not None:
+            raise StateError(
+                f"module {standing.tag} was ginned on run {run}, so its ticket cannot be corrected"
+            )
+        changed = Module(
+            tag=standing.tag,
+            field=standing.field if field_ref is None else field_ref,
+            kind=standing.kind,
+            harvested=standing.harvested,
+            received=standing.received,
+            gross_pounds=standing.gross_pounds if gross is None else gross,
+            tare_pounds=standing.tare_pounds if tare is None else tare,
+            moisture_pct=standing.moisture_pct if moisture is None else moisture,
+            wrap=standing.wrap,
+            variety=standing.variety,
+            note=standing.note if note is None else note,
+        )
+        if changed == standing:
+            return [f"{standing.tag} is unchanged"]
+        with holder.book.writing() as writing:
+            writing.modules.correct(changed)
+        return [
+            f"corrected {changed.tag}: {standing.net_pounds:,} lb at "
+            f"{standing.moisture_pct}% is now {changed.net_pounds:,} lb at "
+            f"{changed.moisture_pct}%"
+        ]
 
     run_command(work)

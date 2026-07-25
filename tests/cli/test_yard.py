@@ -228,3 +228,43 @@ def test_a_file_with_no_header_is_refused(yard: Callable[..., Result], tmp_path:
     result = yard("yard", "intake", str(path))
     assert result.exit_code != 0
     assert "has no header row" in result.output
+
+
+def test_a_ticket_can_be_corrected_before_it_gins(yard: Callable[..., Result]) -> None:
+    weigh_in(yard, "M-1")
+    result = yard("yard", "correct", "M-1", "--gross", "48600")
+    assert result.exit_code == 0
+    assert "22,060 lb at 9.4% is now 22,460 lb" in result.output
+
+
+def test_a_correction_that_changes_nothing_says_so(
+    yard: Callable[..., Result],
+) -> None:
+    weigh_in(yard, "M-1")
+    assert "is unchanged" in yard("yard", "correct", "M-1").output
+
+
+def test_a_ginned_module_cannot_be_corrected(yard: Callable[..., Result]) -> None:
+    weigh_in(yard, "M-1")
+    yard("run", "open", "GR-1", "--gin-code", "41207", "--on", "2025-10-14")
+    yard("run", "feed", "GR-1", "M-1", "--on", "2025-10-14")
+    result = yard("yard", "correct", "M-1", "--gross", "48600")
+    assert result.exit_code != 0
+    assert "ginned on run GR-1" in result.output
+
+
+def test_a_correction_that_will_not_stand_is_refused(
+    yard: Callable[..., Result],
+) -> None:
+    weigh_in(yard, "M-1")
+    result = yard("yard", "correct", "M-1", "--tare", "60000")
+    assert result.exit_code != 0
+    assert "check the ticket" in result.output
+
+
+def test_a_correction_can_move_the_module_to_another_field(
+    yard: Callable[..., Result],
+) -> None:
+    weigh_in(yard, "M-1")
+    result = yard("yard", "correct", "M-1", "--field", "FL-99")
+    assert result.exit_code != 0
