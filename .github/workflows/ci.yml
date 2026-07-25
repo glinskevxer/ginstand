@@ -171,6 +171,11 @@ jobs:
           ginstand --book "$book" run stoppages --crop-year 2025
           ginstand --book "$book" report day --on 2025-10-14 --lists
           ginstand --book "$book" book check --on 2025-11-03
+          ginstand --book "$book" book laws --quiet
+          ginstand --book "$book" find 2541207
+          ginstand --book "$book" report compare --earlier 2024 --later 2025
+          ginstand --book "$book" report moisture --crop-year 2025
+          ginstand --book "$book" warehouse position --on 2026-01-30
           ginstand --book "$book" card estimate --rd 74.0 --plus-b 8.2
           ginstand --book "$book" card outstanding
           ginstand --book "$book" receipt issue 254120700001 \

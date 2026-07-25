@@ -1026,6 +1026,8 @@ Check the package's own arithmetic laws across a spread of inputs.
 ginstand book laws
 ```
 
+- `--quiet` — print nothing when every law holds
+
 ### book load
 
 Read a folder of exported CSV back into an empty book.
@@ -1043,6 +1045,8 @@ ginstand book check
 ```
 
 - `--on` — the day to check at (required)
+- `--strict` — exit non zero when there are faults
+- `--quiet` — print nothing when there are none
 
 ### book backup
 

@@ -118,6 +118,18 @@ a harder conversation than one they have not.
 is takes the day as an argument, which is what makes a settlement reproducible a
 year later.
 
+## Running it from cron
+
+`book check --strict --quiet` prints nothing and exits zero while the book is
+sound, and prints the faults and exits one when it is not. A cron job that mails
+a page every morning stops being read by November, so the quiet form is the one
+to schedule.
+
+```
+ginstand --book 2025.sqlite3 book check --on "$(date -I)" --strict --quiet
+ginstand --book 2025.sqlite3 book laws --quiet
+```
+
 ## Development
 
 Everything CI runs, runs locally:

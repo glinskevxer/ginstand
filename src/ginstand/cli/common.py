@@ -92,3 +92,25 @@ def run_command(work: Callable[[], Iterable[str]]) -> None:
         echo_lines(work())
     except GinstandError as exc:
         raise click.ClickException(str(exc)) from exc
+
+
+def run_checked(work: Callable[[], tuple[Iterable[str], bool]], quiet: bool = False) -> None:
+    """Run a command that has a verdict as well as an answer.
+
+    A command a person runs prints its page and exits zero whatever it found,
+    because a query is not an error and an office in October has plenty. A
+    command cron runs needs the opposite: nobody reads the page, so the verdict
+    has to be in the exit status.
+
+    So the body gives back both, and the caller decides which it wanted. The
+    quiet form prints nothing at all when there is nothing wrong, because a cron
+    job that mails a page every morning stops being read by November.
+    """
+    try:
+        lines, sound = work()
+    except GinstandError as exc:
+        raise click.ClickException(str(exc)) from exc
+    if not quiet or not sound:
+        echo_lines(lines)
+    if not sound:
+        raise SystemExit(1)

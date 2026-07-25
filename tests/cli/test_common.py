@@ -10,7 +10,15 @@ import click
 import pytest
 from click.testing import CliRunner
 
-from ginstand.cli.common import DATE, NUMBER, Context, context, echo_lines, run_command
+from ginstand.cli.common import (
+    DATE,
+    NUMBER,
+    Context,
+    context,
+    echo_lines,
+    run_checked,
+    run_command,
+)
 from ginstand.errors import ValidationError
 from ginstand.store.book import Book
 
@@ -94,3 +102,57 @@ def test_the_context_is_found_off_the_click_context(tmp_path: Path) -> None:
         ctx = click.Context(click.Command("x"))
         ctx.obj = Context(book=book, path=path)
         assert context(ctx).path == path
+
+
+def test_a_checked_command_prints_and_exits_zero_when_it_is_sound() -> None:
+    @click.command()
+    def command() -> None:
+        run_checked(lambda: (("all well",), True))
+
+    result = CliRunner().invoke(command, [])
+    assert result.exit_code == 0
+    assert "all well" in result.output
+
+
+def test_a_checked_command_exits_one_when_it_is_not() -> None:
+    @click.command()
+    def command() -> None:
+        run_checked(lambda: (("something is wrong",), False))
+
+    result = CliRunner().invoke(command, [])
+    assert result.exit_code == 1
+    assert "something is wrong" in result.output
+
+
+def test_the_quiet_form_prints_nothing_when_there_is_nothing_wrong() -> None:
+    @click.command()
+    def command() -> None:
+        run_checked(lambda: (("all well",), True), quiet=True)
+
+    result = CliRunner().invoke(command, [])
+    assert result.exit_code == 0
+    assert result.output == ""
+
+
+def test_the_quiet_form_still_prints_when_something_is_wrong() -> None:
+    @click.command()
+    def command() -> None:
+        run_checked(lambda: (("something is wrong",), False), quiet=True)
+
+    result = CliRunner().invoke(command, [])
+    assert result.exit_code == 1
+    assert "something is wrong" in result.output
+
+
+def test_a_checked_command_turns_our_errors_into_one_line() -> None:
+    @click.command()
+    def command() -> None:
+        def work() -> tuple[tuple[str, ...], bool]:
+            raise ValidationError("moisture", "is not a number")
+
+        run_checked(work)
+
+    result = CliRunner().invoke(command, [])
+    assert result.exit_code != 0
+    assert "moisture: is not a number" in result.output
+    assert "Traceback" not in result.output

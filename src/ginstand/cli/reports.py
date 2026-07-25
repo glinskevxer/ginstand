@@ -8,7 +8,7 @@ from pathlib import Path
 
 import click
 
-from ginstand.cli.common import DATE, NUMBER, context, run_command
+from ginstand.cli.common import DATE, NUMBER, context, run_checked, run_command
 from ginstand.invariants import failures as law_failures
 from ginstand.model.instrument import Instrument, InstrumentKind
 from ginstand.quality.calibration import (
@@ -289,18 +289,19 @@ def book() -> None:
 
 
 @book.command("laws")
+@click.option("--quiet", is_flag=True, help="print nothing when every law holds")
 @click.pass_context
-def book_laws(ctx: click.Context) -> None:
+def book_laws(ctx: click.Context, quiet: bool) -> None:
     """Check the package's own arithmetic laws across a spread of inputs."""
     context(ctx)
 
-    def work() -> tuple[str, ...]:
+    def work() -> tuple[tuple[str, ...], bool]:
         broken = tuple(law_failures())
         if not broken:
-            return ("every law holds",)
-        return (f"{len(broken)} laws broken", *broken)
+            return ("every law holds",), True
+        return (f"{len(broken)} laws broken", *broken), False
 
-    run_command(work)
+    run_checked(work, quiet)
 
 
 @book.command("load")
@@ -323,11 +324,19 @@ def book_load(ctx: click.Context, folder: Path) -> None:
 
 @book.command("check")
 @click.option("--on", type=DATE, required=True, help="the day to check at")
+@click.option("--strict", is_flag=True, help="exit non zero when there are faults")
+@click.option("--quiet", is_flag=True, help="print nothing when there are none")
 @click.pass_context
-def book_check(ctx: click.Context, on: date) -> None:
+def book_check(ctx: click.Context, on: date, strict: bool, quiet: bool) -> None:
     """Ask everything worth asking about the book, in one page."""
     holder = context(ctx)
-    run_command(lambda: diagnose(holder.book, on).lines)
+
+    def work() -> tuple[tuple[str, ...], bool]:
+        found = diagnose(holder.book, on)
+        sound = found.sound and not found.faults if strict else True
+        return found.lines, sound
+
+    run_checked(work, quiet)
 
 
 @book.command("backup")
