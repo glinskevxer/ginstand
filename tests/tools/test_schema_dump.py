@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from ginstand.store.migrations import MIGRATIONS, latest_version
@@ -53,3 +55,38 @@ def test_the_indexes_are_listed_under_their_table() -> None:
 
 def test_the_document_says_it_is_generated() -> None:
     assert "This file is generated" in dump()
+
+
+def test_a_stale_document_fails_the_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The check has to have been seen to fire, not only to pass."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / DOCUMENT).write_text("old\n")
+    monkeypatch.setattr("ginstand.tools.schema_dump.repo_root", lambda: tmp_path)
+    monkeypatch.setattr("sys.argv", ["schema_dump", "--check"])
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+    assert exit_info.value.code == 1
+    assert "is out of date" in capsys.readouterr().out
+
+
+def test_a_missing_document_fails_the_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr("ginstand.tools.schema_dump.repo_root", lambda: tmp_path)
+    monkeypatch.setattr("sys.argv", ["schema_dump", "--check"])
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+    assert exit_info.value.code == 1
+    assert "is not there" in capsys.readouterr().out
+
+
+def test_writing_the_document_makes_the_folder(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr("ginstand.tools.schema_dump.repo_root", lambda: tmp_path)
+    monkeypatch.setattr("sys.argv", ["schema_dump"])
+    main()
+    assert (tmp_path / DOCUMENT).is_file()
+    assert "wrote" in capsys.readouterr().out

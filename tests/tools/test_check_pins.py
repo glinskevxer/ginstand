@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
+
 from ginstand.tools.check_pins import (
     PIN,
     closure,
@@ -59,3 +63,64 @@ def test_the_stack_is_an_early_2025_one() -> None:
     assert closed["coverage"].startswith("7.6.")
     assert closed["packaging"] == "24.2"
     assert closed["typing-extensions"] == "4.12.2"
+
+
+def a_project(tmp_path: Path, body: str) -> Path:
+    path = tmp_path / "pyproject.toml"
+    path.write_text(body)
+    return path
+
+
+def test_an_unpinned_dependency_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The check has to have been seen to fire, not only to pass."""
+    project = a_project(
+        tmp_path,
+        '[project]\nname = "x"\nversion = "1.0.0"\ndependencies = ["click>=8"]\n',
+    )
+    constraints = tmp_path / "constraints.txt"
+    constraints.write_text("")
+    monkeypatch.setattr("ginstand.tools.check_pins.project_file", lambda: project)
+    monkeypatch.setattr("ginstand.tools.check_pins.constraints_file", lambda: constraints)
+    messages = [finding.message for finding in findings()]
+    assert any("is not pinned to an exact version" in message for message in messages)
+
+
+def test_a_pin_missing_from_the_closure_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = a_project(
+        tmp_path,
+        '[project]\nname = "x"\nversion = "1.0.0"\ndependencies = ["click==8.1.8"]\n',
+    )
+    constraints = tmp_path / "constraints.txt"
+    constraints.write_text("# nothing\n")
+    monkeypatch.setattr("ginstand.tools.check_pins.project_file", lambda: project)
+    monkeypatch.setattr("ginstand.tools.check_pins.constraints_file", lambda: constraints)
+    assert any("pinned in the project and not here" in f.message for f in findings())
+
+
+def test_a_closure_that_disagrees_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = a_project(
+        tmp_path,
+        '[project]\nname = "x"\nversion = "1.0.0"\ndependencies = ["click==8.1.8"]\n',
+    )
+    constraints = tmp_path / "constraints.txt"
+    constraints.write_text("click==8.0.0\n")
+    monkeypatch.setattr("ginstand.tools.check_pins.project_file", lambda: project)
+    monkeypatch.setattr("ginstand.tools.check_pins.constraints_file", lambda: constraints)
+    assert any("8.1.8 in the project and 8.0.0 here" in f.message for f in findings())
+
+
+def test_a_range_in_the_closure_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    project = a_project(tmp_path, '[project]\nname = "x"\nversion = "1.0.0"\n')
+    constraints = tmp_path / "constraints.txt"
+    constraints.write_text("click>=8\n")
+    monkeypatch.setattr("ginstand.tools.check_pins.project_file", lambda: project)
+    monkeypatch.setattr("ginstand.tools.check_pins.constraints_file", lambda: constraints)
+    assert any("is not an exact pin" in f.message for f in findings())

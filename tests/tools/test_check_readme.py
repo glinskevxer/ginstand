@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 from ginstand.tools.check_readme import CHECK, COMMAND, _resolve, findings, readme_lines
 
 
@@ -55,3 +57,34 @@ def test_the_readme_lists_every_check_ci_runs() -> None:
         "check_messages",
     ):
         assert f"python -m ginstand.tools.{name}" in text
+
+
+def test_a_readme_naming_a_command_that_is_gone_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The check has to have been seen to fire, not only to pass."""
+    monkeypatch.setattr(
+        "ginstand.tools.check_readme.readme_lines",
+        lambda: ["ginstand --book x.sqlite3 producer remove P-12"],
+    )
+    assert any("there is no command" in f.message for f in findings())
+
+
+def test_a_readme_naming_a_check_that_is_gone_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "ginstand.tools.check_readme.readme_lines",
+        lambda: ["python -m ginstand.tools.check_nothing"],
+    )
+    assert any("there is no check called" in f.message for f in findings())
+
+
+def test_a_line_with_no_command_words_is_left_alone(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "ginstand.tools.check_readme.readme_lines",
+        lambda: ["ginstand --book x.sqlite3 --help"],
+    )
+    assert list(findings()) == []

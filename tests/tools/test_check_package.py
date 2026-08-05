@@ -2,6 +2,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
+import pytest
+
 from ginstand.tools.base import repo_root, source_root
 from ginstand.tools.check_package import findings, package_directories, project
 
@@ -59,3 +63,34 @@ def test_no_module_at_the_root_shadows_the_standard_library() -> None:
 
     for path in source_root().glob("*.py"):
         assert path.stem not in sys.stdlib_module_names, path
+
+
+def test_a_directory_with_no_init_file_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The check has to have been seen to fire, not only to pass."""
+    root = tmp_path / "ginstand"
+    (root / "orphan").mkdir(parents=True)
+    (root / "__init__.py").write_text('"""x."""\n')
+    monkeypatch.setattr("ginstand.tools.check_package.source_root", lambda: root)
+    messages = [finding.message for finding in findings()]
+    assert any("no __init__.py, so it will not ship" in message for message in messages)
+
+
+def test_a_test_directory_with_no_init_file_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    (tmp_path / "tests" / "orphan").mkdir(parents=True)
+    monkeypatch.setattr("ginstand.tools.check_package.repo_root", lambda: tmp_path)
+    assert any("test directory with no __init__.py" in f.message for f in findings())
+
+
+def test_a_module_that_shadows_the_standard_library_is_reported(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    root = tmp_path / "ginstand"
+    root.mkdir(parents=True)
+    (root / "__init__.py").write_text('"""x."""\n')
+    (root / "json.py").write_text('"""x."""\n')
+    monkeypatch.setattr("ginstand.tools.check_package.source_root", lambda: root)
+    assert any("standard library module" in f.message for f in findings())

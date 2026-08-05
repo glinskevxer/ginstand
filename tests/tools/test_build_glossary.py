@@ -85,3 +85,38 @@ def test_the_checks_are_left_out_of_the_glossary() -> None:
 def test_the_terms_are_in_module_then_name_order() -> None:
     keys = [(term.module, term.name) for term in terms()]
     assert keys == sorted(keys)
+
+
+def test_a_stale_glossary_fails_the_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The check has to have been seen to fire, not only to pass."""
+    (tmp_path / "docs").mkdir()
+    (tmp_path / DOCUMENT).write_text("old\n")
+    monkeypatch.setattr("ginstand.tools.build_glossary.repo_root", lambda: tmp_path)
+    monkeypatch.setattr("sys.argv", ["build_glossary", "--check"])
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+    assert exit_info.value.code == 1
+    assert "is out of date" in capsys.readouterr().out
+
+
+def test_a_missing_glossary_fails_the_check(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr("ginstand.tools.build_glossary.repo_root", lambda: tmp_path)
+    monkeypatch.setattr("sys.argv", ["build_glossary", "--check"])
+    with pytest.raises(SystemExit) as exit_info:
+        main()
+    assert exit_info.value.code == 1
+    assert "is not there" in capsys.readouterr().out
+
+
+def test_writing_the_glossary_counts_the_terms(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.setattr("ginstand.tools.build_glossary.repo_root", lambda: tmp_path)
+    monkeypatch.setattr("sys.argv", ["build_glossary"])
+    main()
+    assert (tmp_path / DOCUMENT).is_file()
+    assert "terms" in capsys.readouterr().out

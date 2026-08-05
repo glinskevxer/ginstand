@@ -125,3 +125,39 @@ def test_a_missing_field_behaves_like_every_other_missing_record(
     assert not fields.exists("FL-9")
     with pytest.raises(NotFoundError, match="no field with reference FL-9"):
         fields.get("FL-9")
+
+
+def test_a_farm_lists_for_a_producer_who_has_none(stood_up: sqlite3.Connection) -> None:
+    assert FarmStore(stood_up).for_producer("P-40") == ()
+
+
+def test_a_field_can_be_updated_in_place(stood_up: sqlite3.Connection) -> None:
+    FarmStore(stood_up).add(Farm(ref="F-3", producer="P-12", name="Home Place"))
+    fields = FieldStore(stood_up)
+    fields.add(Field(ref="FL-9", farm="F-3", name="North 80", acres=Decimal("78.4"), lease="L-1"))
+    fields.update(
+        Field(
+            ref="FL-9",
+            farm="F-3",
+            name="North 80",
+            acres=Decimal("80"),
+            lease="L-2",
+            variety="DP 2115",
+            irrigated=True,
+        )
+    )
+    back = fields.get("FL-9")
+    assert back.acres == Decimal("80.00")
+    assert back.lease == "L-2"
+    assert back.variety == "DP 2115"
+    assert back.irrigated is True
+
+
+def test_updating_a_field_that_is_not_there_is_refused(
+    stood_up: sqlite3.Connection,
+) -> None:
+    FarmStore(stood_up).add(Farm(ref="F-3", producer="P-12", name="Home Place"))
+    with pytest.raises(NotFoundError, match="no field with reference FL-9"):
+        FieldStore(stood_up).update(
+            Field(ref="FL-9", farm="F-3", name="North 80", acres=Decimal("40"), lease="L-1")
+        )

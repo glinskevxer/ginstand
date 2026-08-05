@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import date
 
+import pytest
+
 from ginstand.store.migrations import MIGRATIONS, apply_pending
 from ginstand.store.sqlite import connect, table_names
 from ginstand.tools.check_migrations import EXTRA_TABLES, STORES, findings
@@ -58,3 +60,65 @@ def test_the_schema_applies_from_nothing() -> None:
     applied = apply_pending(connection, date(2025, 8, 1))
     connection.close()
     assert len(applied) == len(MIGRATIONS)
+
+
+def test_a_store_naming_a_table_the_schema_has_not_got_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The check has to have been seen to fire, not only to pass."""
+
+    class Nowhere:
+        table = "nowhere"
+
+    monkeypatch.setattr("ginstand.tools.check_migrations.STORES", (Nowhere,))
+    messages = [finding.message for finding in findings()]
+    assert any("which the schema has not got" in message for message in messages)
+
+
+def test_a_table_nothing_reads_is_reported(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr("ginstand.tools.check_migrations.STORES", ())
+    assert any("which nothing reads" in f.message for f in findings())
+
+
+def test_a_table_expected_and_missing_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("ginstand.tools.check_migrations.EXTRA_TABLES", {"nowhere"})
+    assert any("is expected and the schema has not got it" in f.message for f in findings())
+
+
+def test_versions_that_skip_a_number_are_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ginstand.store.migrations import Migration
+
+    monkeypatch.setattr(
+        "ginstand.tools.check_migrations.MIGRATIONS",
+        (Migration(version=2, name="skipped", statements=()),),
+    )
+    assert any("the versions are [2]" in f.message for f in findings())
+
+
+def test_a_migration_with_no_name_is_reported(monkeypatch: pytest.MonkeyPatch) -> None:
+    from ginstand.store.migrations import Migration
+
+    monkeypatch.setattr(
+        "ginstand.tools.check_migrations.MIGRATIONS",
+        (Migration(version=1, name="  ", statements=()),),
+    )
+    assert any("has no name" in f.message for f in findings())
+
+
+def test_two_migrations_sharing_a_name_are_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from ginstand.store.migrations import Migration
+
+    monkeypatch.setattr(
+        "ginstand.tools.check_migrations.MIGRATIONS",
+        (
+            Migration(version=1, name="same", statements=()),
+            Migration(version=2, name="same", statements=()),
+        ),
+    )
+    assert any("share a name" in f.message for f in findings())

@@ -82,3 +82,25 @@ def test_the_shares_include_the_ones_that_do_not_divide() -> None:
 def test_a_broken_law_is_reported_with_its_input() -> None:
     assert apportionment_adds_back(10, (1, 1)) is not False
     assert list(failures()) == []
+
+
+def test_a_law_that_does_not_hold_is_reported_with_its_input(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Every law has to have been seen to fire, not only to pass."""
+    for name, wanted in (
+        ("apportionment_adds_back", "apportionment lost a unit"),
+        ("bale_split_adds_back", "a bale went missing"),
+        ("carries_cancel", "the carries do not cancel"),
+        ("lease_split_adds_back", "a lease split lost a cent"),
+        ("moisture_round_trips", "moisture did not round trip"),
+    ):
+
+        def never(*_args: object, **_kwargs: object) -> bool:
+            return False
+
+        monkeypatch.setattr(f"ginstand.invariants.{name}", never)
+        broken = list(failures())
+        assert any(wanted in message for message in broken), name
+        assert not holds()
+        monkeypatch.undo()

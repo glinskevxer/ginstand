@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import pytest
+
 import ginstand.ginning.shares as shares
 from ginstand.tools.base import repo_root
 from ginstand.tools.check_design import (
@@ -68,3 +70,34 @@ def test_every_rule_worth_writing_down_has_a_section() -> None:
     headings = [heading for heading, _ in sections()]
     for wanted in ("carry", "staple ladder", "yard queue", "lease split"):
         assert any(wanted in heading for heading in headings), wanted
+
+
+def test_a_note_naming_a_module_that_is_gone_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """The check has to have been seen to fire, not only to pass."""
+    monkeypatch.setattr(
+        "ginstand.tools.check_design.note",
+        lambda: "# x\n\n## A rule, in `ginstand.nowhere`\n\nIt does something.\n",
+    )
+    assert any("is not there any more" in f.message for f in findings())
+
+
+def test_a_note_naming_a_function_that_is_gone_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "ginstand.tools.check_design.note",
+        lambda: ("# x\n\n## A rule, in `ginstand.ginning.shares`\n\n`nothing_at_all` does it.\n"),
+    )
+    assert any("nothing_at_all is not in" in f.message for f in findings())
+
+
+def test_a_section_naming_no_module_is_left_alone(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "ginstand.tools.check_design.note",
+        lambda: "# x\n\n## Nothing in particular\n\nJust prose about `things`.\n",
+    )
+    assert list(findings()) == []
