@@ -16,6 +16,11 @@ pip install -e ".[dev]" -c constraints.txt
 pytest -q
 ```
 
+The suite is a little over two thousand three hundred tests and CI holds it to
+96% coverage overall and 85% on every file on its own. The per file floor is the
+one that does the work: a total hides the module that has just been written and
+has nothing against it.
+
 Stand a book up and gin something:
 
 ```

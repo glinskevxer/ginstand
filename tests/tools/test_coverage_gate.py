@@ -7,7 +7,13 @@ from pathlib import Path
 
 import pytest
 
-from ginstand.tools.coverage_gate import FileCoverage, failures, main, read_report
+from ginstand.tools.coverage_gate import (
+    FileCoverage,
+    failures,
+    main,
+    read_report,
+    worst,
+)
 
 
 def a_report(tmp_path: Path, total: float, files: dict[str, float]) -> Path:
@@ -86,3 +92,76 @@ def test_a_report_under_the_floor_exits_one(
         main()
     assert exit_info.value.code == 1
     assert "coverage_gate: 2 problems" in capsys.readouterr().out
+
+
+def test_the_floors_the_workflow_sets_are_the_ones_the_package_clears() -> None:
+    """A floor above where the package sits gets lowered, and stops meaning anything."""
+    from ginstand.tools.base import repo_root
+
+    workflow = (repo_root() / ".github" / "workflows" / "ci.yml").read_text()
+    assert "coverage_gate --floor 96 --file-floor 85 --worst 5" in workflow
+
+
+def test_the_defaults_agree_with_the_workflow(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = a_report(tmp_path, 96.0, {"a.py": 85.0})
+    monkeypatch.setattr("sys.argv", ["coverage_gate", "--report", str(path)])
+    main()
+    assert "clean at 96.00%" in capsys.readouterr().out
+
+
+def test_a_file_just_under_the_default_file_floor_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    path = a_report(tmp_path, 99.0, {"a.py": 84.9})
+    monkeypatch.setattr("sys.argv", ["coverage_gate", "--report", str(path)])
+    with pytest.raises(SystemExit):
+        main()
+
+
+def test_the_least_covered_files_come_back_worst_first() -> None:
+    files = (
+        FileCoverage("a.py", 99.0, 1),
+        FileCoverage("b.py", 60.0, 40),
+        FileCoverage("c.py", 80.0, 10),
+    )
+    assert [item.path for item in worst(files, 2)] == ["b.py", "c.py"]
+
+
+def test_asking_for_none_of_the_worst_gives_none() -> None:
+    files = (FileCoverage("a.py", 99.0, 1),)
+    assert worst(files, 0) == ()
+
+
+def test_asking_for_more_than_there_are_gives_what_there_is() -> None:
+    files = (FileCoverage("a.py", 99.0, 1),)
+    assert len(worst(files, 10)) == 1
+
+
+def test_two_files_at_the_same_cover_sort_by_name() -> None:
+    files = (FileCoverage("b.py", 90.0, 1), FileCoverage("a.py", 90.0, 1))
+    assert [item.path for item in worst(files, 2)] == ["a.py", "b.py"]
+
+
+def test_the_worst_files_print_even_when_the_gate_passes(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = a_report(tmp_path, 99.0, {"a.py": 99.0, "b.py": 90.0})
+    monkeypatch.setattr("sys.argv", ["coverage_gate", "--report", str(path), "--worst", "1"])
+    main()
+    output = capsys.readouterr().out
+    assert "90.00%  b.py" in output
+    assert "clean at" in output
+
+
+def test_the_worst_files_print_when_the_gate_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    path = a_report(tmp_path, 50.0, {"a.py": 20.0})
+    monkeypatch.setattr("sys.argv", ["coverage_gate", "--report", str(path), "--worst", "1"])
+    with pytest.raises(SystemExit):
+        main()
+    output = capsys.readouterr().out
+    assert "20.00%  a.py" in output
+    assert "3 lines uncovered" in output

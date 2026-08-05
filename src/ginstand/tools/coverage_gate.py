@@ -5,6 +5,11 @@ ninety five percent with one module at nine, and the module at nine is always th
 one that just got written. So there are two floors and the per file one is the
 one that catches things.
 
+The floors are the ones CI passes with room to spare rather than the ones
+somebody would like. A floor set above where the package sits fails on the next
+commit and gets lowered, which teaches everybody that the number is decorative.
+The workflow sets them, and they have been raised twice as the suite filled in.
+
 The report is read out of coverage's own json rather than re-measured, because
 this runs after the suite and re-running it to check it would double the time
 for nothing.
@@ -62,12 +67,28 @@ def failures(
             )
 
 
+def worst(files: tuple[FileCoverage, ...], count: int) -> tuple[FileCoverage, ...]:
+    """The least covered files, worst first.
+
+    Printed whether or not the gate passed, because the file that is about to
+    fail it is more useful to know about than the one that just did. A gate that
+    only speaks when it fails gets read once, on the day it fails.
+    """
+    return tuple(sorted(files, key=lambda item: (item.percent, item.path))[:count])
+
+
 def main() -> None:
     """Read the report and hold it to both floors."""
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--floor", type=float, default=90.0)
-    parser.add_argument("--file-floor", type=float, default=70.0)
+    parser.add_argument("--floor", type=float, default=96.0)
+    parser.add_argument("--file-floor", type=float, default=85.0)
     parser.add_argument("--report", default=DEFAULT_REPORT)
+    parser.add_argument(
+        "--worst",
+        type=int,
+        default=0,
+        help="print this many of the least covered files as well",
+    )
     args = parser.parse_args()
 
     path = Path(args.report)
@@ -78,6 +99,8 @@ def main() -> None:
         sys.exit(1)
 
     total, files = read_report(path)
+    for item in worst(files, args.worst):
+        print(f"{item.percent:6.2f}%  {item.path}  {item.missing} lines uncovered")
     problems = list(failures(total, files, args.floor, args.file_floor))
     for problem in problems:
         print(problem)
