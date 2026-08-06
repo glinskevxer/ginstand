@@ -89,3 +89,17 @@ def test_the_find_command_finds_a_producer(gin: Callable[..., Result]) -> None:
     output = gin("find", "aldys").output
     assert "producer" in output
     assert "P-12" in output
+
+
+def test_the_version_the_line_prints_is_the_package_version(
+    runner: CliRunner,
+) -> None:
+    result = runner.invoke(cli, ["--version"])
+    assert "1.0.0" in result.output
+
+
+def test_about_names_the_schema_version_and_the_one_the_code_writes(
+    gin: Callable[..., Result],
+) -> None:
+    output = gin("about").output
+    assert f"schema version {latest_version()} of {latest_version()}" in output

@@ -2,14 +2,20 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from ginstand import __version__
 from ginstand.tools.release_check import (
+    GENERATED,
+    MINIMUM_NOTES,
     VERSION,
     changelog_versions,
     findings,
     main,
+    missing_files,
+    newest_notes,
     project_version,
 )
 
@@ -100,3 +106,56 @@ def test_the_check_exits_non_zero_when_it_finds_something(
         main()
     assert exit_info.value.code == 1
     assert "release_check" in capsys.readouterr().out
+
+
+def test_the_package_is_at_its_first_full_release() -> None:
+    assert __version__ == "1.0.0"
+
+
+def test_the_changelog_carries_both_releases() -> None:
+    assert changelog_versions() == ("1.0.0", "0.1.0")
+
+
+def test_the_release_notes_say_what_the_checks_found() -> None:
+    from ginstand.tools.base import repo_root
+
+    text = (repo_root() / "CHANGELOG.md").read_text()
+    assert "colour chart was sitting a layer above" in text
+    assert "context manager for its transaction" in text
+
+
+def test_every_file_a_release_needs_is_there() -> None:
+    assert missing_files() == ()
+
+
+def test_the_generated_documents_are_among_them() -> None:
+    assert "docs/commands.md" in GENERATED
+    assert "docs/schema.md" in GENERATED
+    assert "docs/glossary.md" in GENERATED
+    assert "docs/design.md" in GENERATED
+
+
+def test_the_newest_release_has_something_said_about_it() -> None:
+    assert len(newest_notes()) >= MINIMUM_NOTES
+
+
+def test_a_release_with_nothing_said_about_it_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("ginstand.tools.release_check.newest_notes", tuple)
+    assert any("which is not a release note" in f.message for f in findings())
+
+
+def test_a_file_a_release_needs_and_has_not_got_is_reported(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("ginstand.tools.release_check.missing_files", lambda: ("docs/nowhere.md",))
+    assert any("a release needs it" in f.message for f in findings())
+
+
+def test_a_changelog_with_no_headings_has_no_notes(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    (tmp_path / "CHANGELOG.md").write_text("# Changelog\n\nnothing yet\n")
+    monkeypatch.setattr("ginstand.tools.release_check.repo_root", lambda: tmp_path)
+    assert newest_notes() == ()
