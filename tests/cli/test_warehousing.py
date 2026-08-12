@@ -213,3 +213,24 @@ def test_the_position_prints_what_is_in_store(stored: Callable[..., Result]) -> 
     assert "In store at 2026-01-30" in output
     assert "WH-1" in output
     assert "P-12" in output
+
+
+def test_a_warehouse_edit_can_licence_it(stored: Callable[..., Result]) -> None:
+    stored("warehouse", "add", "WH-2", "Gin yard shed")
+    result = stored("warehouse", "edit", "WH-2", "--code", "41-990")
+    assert result.exit_code == 0
+    assert "(licensed)" in result.output
+
+
+def test_a_warehouse_edit_that_changes_nothing_says_so(
+    stored: Callable[..., Result],
+) -> None:
+    assert "is unchanged" in stored("warehouse", "edit", "WH-1").output
+
+
+def test_editing_a_warehouse_that_is_not_there_is_refused(
+    stored: Callable[..., Result],
+) -> None:
+    result = stored("warehouse", "edit", "WH-9", "--name", "Nowhere")
+    assert result.exit_code != 0
+    assert "no warehouse with reference WH-9" in result.output

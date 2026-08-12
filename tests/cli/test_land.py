@@ -113,3 +113,86 @@ def test_the_farm_listing_counts_the_fields(growers: Callable[..., Result]) -> N
     growers("farm", "add", "F-3", "P-12", "Home Place")
     growers("field", "add", "FL-9", "F-3", "North 80", "--acres", "78.4", "--lease", "L-1")
     assert "1" in growers("farm", "list").output
+
+
+def test_a_farm_edit_changes_only_what_was_given(
+    growers: Callable[..., Result],
+) -> None:
+    growers("farm", "add", "F-3", "P-12", "Home Place", "--county", "Bolivar")
+    result = growers("farm", "edit", "F-3", "--name", "Home Place North")
+    assert result.exit_code == 0
+    assert "changed farm F-3 Home Place North" in result.output
+    assert "Bolivar" in growers("farm", "list").output
+
+
+def test_a_farm_edit_that_changes_nothing_says_so(
+    growers: Callable[..., Result],
+) -> None:
+    growers("farm", "add", "F-3", "P-12", "Home Place")
+    assert "is unchanged" in growers("farm", "edit", "F-3").output
+
+
+def test_editing_a_farm_that_is_not_there_is_refused(
+    growers: Callable[..., Result],
+) -> None:
+    result = growers("farm", "edit", "F-9", "--name", "Nowhere")
+    assert result.exit_code != 0
+    assert "no farm with reference F-9" in result.output
+
+
+def test_a_field_edit_can_change_the_acres(growers: Callable[..., Result]) -> None:
+    growers("farm", "add", "F-3", "P-12", "Home Place")
+    growers("field", "add", "FL-9", "F-3", "North 80", "--acres", "78.4", "--lease", "L-1")
+    result = growers("field", "edit", "FL-9", "--acres", "80.5")
+    assert result.exit_code == 0
+    assert "80.50 acres under L-1" in result.output
+
+
+def test_a_field_edit_can_move_the_lease(growers: Callable[..., Result]) -> None:
+    growers("producer", "add", "P-40", "Merrick Land Co")
+    growers(
+        "lease",
+        "add",
+        "L-2",
+        "P-12",
+        "--kind",
+        "share",
+        "--landlord",
+        "P-40",
+        "--share",
+        "0.25",
+    )
+    growers("farm", "add", "F-3", "P-12", "Home Place")
+    growers("field", "add", "FL-9", "F-3", "North 80", "--acres", "78.4", "--lease", "L-1")
+    result = growers("field", "edit", "FL-9", "--lease", "L-2")
+    assert result.exit_code == 0
+    assert "under L-2" in result.output
+
+
+def test_a_field_edit_onto_a_lease_that_is_not_there_is_refused(
+    growers: Callable[..., Result],
+) -> None:
+    growers("farm", "add", "F-3", "P-12", "Home Place")
+    growers("field", "add", "FL-9", "F-3", "North 80", "--acres", "78.4", "--lease", "L-1")
+    result = growers("field", "edit", "FL-9", "--lease", "L-9")
+    assert result.exit_code != 0
+    assert "no lease with reference L-9" in result.output
+
+
+def test_a_field_can_be_marked_irrigated_and_back(
+    growers: Callable[..., Result],
+) -> None:
+    growers("farm", "add", "F-3", "P-12", "Home Place")
+    growers("field", "add", "FL-9", "F-3", "North 80", "--acres", "78.4", "--lease", "L-1")
+    growers("field", "edit", "FL-9", "--irrigated")
+    assert "yes" in growers("field", "list").output
+    growers("field", "edit", "FL-9", "--dryland")
+    assert "yes" not in growers("field", "list").output
+
+
+def test_a_field_edit_that_changes_nothing_says_so(
+    growers: Callable[..., Result],
+) -> None:
+    growers("farm", "add", "F-3", "P-12", "Home Place")
+    growers("field", "add", "FL-9", "F-3", "North 80", "--acres", "78.4", "--lease", "L-1")
+    assert "is unchanged" in growers("field", "edit", "FL-9").output

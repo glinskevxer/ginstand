@@ -126,6 +126,18 @@ ginstand farm list
 
 - `--producer` — only this producer's farms
 
+### farm edit
+
+Change what the book says about a farm. Only what is given changes.
+
+```
+ginstand farm edit <ref>
+```
+
+- `--name` — a new name
+- `--fsa` — a new farm agency number
+- `--county` — a new county
+
 ## field
 
 The field register.
@@ -152,6 +164,20 @@ ginstand field list
 ```
 
 - `--farm` — only this farm's fields
+
+### field edit
+
+Change what the book says about a field. Only what is given changes.
+
+```
+ginstand field edit <ref>
+```
+
+- `--name` — a new name
+- `--acres` — a corrected acreage
+- `--lease` — the lease it is really farmed under
+- `--variety` — what was actually planted
+- `--irrigated` — whether it is irrigated
 
 ## yard
 
@@ -668,6 +694,18 @@ ginstand warehouse position
 ```
 
 - `--on` — the day to price it at (required)
+
+### warehouse edit
+
+Change what the book says about a warehouse. Only what is given changes.
+
+```
+ginstand warehouse edit <ref>
+```
+
+- `--name` — a new name
+- `--code` — a new licensed warehouse code
+- `--location` — a new location
 
 ## receipt
 

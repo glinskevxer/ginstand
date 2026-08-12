@@ -261,3 +261,37 @@ def warehouse_position(ctx: click.Context, on: date) -> None:
     """What is in store, whose it is, and what it is costing to keep."""
     holder = context(ctx)
     run_command(lambda: position_table(holder.book, on).render())
+
+
+@warehouse.command("edit")
+@click.argument("ref")
+@click.option("--name", default=None, help="a new name")
+@click.option("--code", default=None, help="a new licensed warehouse code")
+@click.option("--location", default=None, help="a new location")
+@click.pass_context
+def warehouse_edit(
+    ctx: click.Context,
+    ref: str,
+    name: str | None,
+    code: str | None,
+    location: str | None,
+) -> None:
+    """Change what the book says about a warehouse. Only what is given changes."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        standing = holder.book.warehouses.get(ref)
+        changed = Warehouse(
+            ref=standing.ref,
+            name=standing.name if name is None else name,
+            code=standing.code if code is None else code,
+            location=standing.location if location is None else location,
+        )
+        if changed == standing:
+            return [f"{standing.ref} is unchanged"]
+        with holder.book.writing() as writing:
+            writing.warehouses.update(changed)
+        licensed = "licensed" if changed.licensed else "not licensed"
+        return [f"changed warehouse {changed.ref} {changed.name} ({licensed})"]
+
+    run_command(work)

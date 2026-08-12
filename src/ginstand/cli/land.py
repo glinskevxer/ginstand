@@ -163,3 +163,87 @@ def field_list(ctx: click.Context, farm_ref: str) -> None:
         ).render()
 
     run_command(work)
+
+
+@farm.command("edit")
+@click.argument("ref")
+@click.option("--name", default=None, help="a new name")
+@click.option("--fsa", "fsa_number", default=None, help="a new farm agency number")
+@click.option("--county", default=None, help="a new county")
+@click.pass_context
+def farm_edit(
+    ctx: click.Context,
+    ref: str,
+    name: str | None,
+    fsa_number: str | None,
+    county: str | None,
+) -> None:
+    """Change what the book says about a farm. Only what is given changes."""
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        standing = holder.book.farms.get(ref)
+        changed = Farm(
+            ref=standing.ref,
+            producer=standing.producer,
+            name=standing.name if name is None else name,
+            fsa_number=standing.fsa_number if fsa_number is None else fsa_number,
+            county=standing.county if county is None else county,
+        )
+        if changed == standing:
+            return [f"{standing.ref} is unchanged"]
+        with holder.book.writing() as writing:
+            writing.farms.update(changed)
+        return [f"changed farm {changed.ref} {changed.name}"]
+
+    run_command(work)
+
+
+@field.command("edit")
+@click.argument("ref")
+@click.option("--name", default=None, help="a new name")
+@click.option("--acres", type=NUMBER, default=None, help="a corrected acreage")
+@click.option("--lease", default=None, help="the lease it is really farmed under")
+@click.option("--variety", default=None, help="what was actually planted")
+@click.option("--irrigated/--dryland", default=None, help="whether it is irrigated")
+@click.pass_context
+def field_edit(
+    ctx: click.Context,
+    ref: str,
+    name: str | None,
+    acres: Decimal | None,
+    lease: str | None,
+    variety: str | None,
+    irrigated: bool | None,
+) -> None:
+    """Change what the book says about a field. Only what is given changes.
+
+    The lease can be moved, and it is worth knowing that moving it does not move
+    a settlement that has already been posted. It changes who the next one is
+    split with, which is nearly always what somebody correcting a lease means.
+    """
+    holder = context(ctx)
+
+    def work() -> list[str]:
+        standing = holder.book.fields.get(ref)
+        if lease is not None:
+            holder.book.leases.get(lease)
+        changed = Field(
+            ref=standing.ref,
+            farm=standing.farm,
+            name=standing.name if name is None else name,
+            acres=standing.acres if acres is None else acres,
+            lease=standing.lease if lease is None else lease,
+            variety=standing.variety if variety is None else variety,
+            irrigated=standing.irrigated if irrigated is None else irrigated,
+        )
+        if changed == standing:
+            return [f"{standing.ref} is unchanged"]
+        with holder.book.writing() as writing:
+            writing.fields.update(changed)
+        return [
+            f"changed field {changed.ref} {changed.name}, "
+            f"{changed.acres} acres under {changed.lease}"
+        ]
+
+    run_command(work)
