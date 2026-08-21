@@ -117,11 +117,13 @@ def test_the_changelog_carries_both_releases() -> None:
 
 
 def test_the_release_notes_say_what_the_checks_found() -> None:
+    """Read with the wrapping taken out, because the notes wrap at 79 columns."""
     from ginstand.tools.base import repo_root
 
-    text = (repo_root() / "CHANGELOG.md").read_text()
-    assert "colour chart was sitting a layer above" in text
-    assert "context manager for its transaction" in text
+    text = " ".join((repo_root() / "CHANGELOG.md").read_text().split())
+    assert "colour chart was sitting a layer above the records" in text
+    assert "context manager for its transaction and not for itself" in text
+    assert "opened a book and never closed it" in text
 
 
 def test_every_file_a_release_needs_is_there() -> None:

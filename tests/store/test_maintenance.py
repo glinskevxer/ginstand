@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -24,7 +25,7 @@ from ginstand.store.maintenance import (
 
 
 @pytest.fixture
-def stocked(tmp_path: Path) -> Book:
+def stocked(tmp_path: Path) -> Iterator[Book]:
     book = Book.create(tmp_path / "book.sqlite3", date(2025, 8, 4))
     book.producers.add(Producer(ref="P-12", name="Aldys Brothers"))
     book.runs.add(GinRun(ref="GR-1", crop_year=2025, gin_code="41207", opened=date(2025, 10, 14)))
@@ -38,7 +39,10 @@ def stocked(tmp_path: Path) -> Book:
             moisture_pct=Decimal("6.8"),
         )
     )
-    return book
+    try:
+        yield book
+    finally:
+        book.close()
 
 
 def test_a_backup_is_a_book_that_opens(stocked: Book, tmp_path: Path) -> None:

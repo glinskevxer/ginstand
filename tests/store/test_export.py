@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+from collections.abc import Iterator
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -17,11 +18,11 @@ from ginstand.store.migrations import MIGRATION_TABLE
 
 
 @pytest.fixture
-def stocked() -> Book:
-    book = Book.create(":memory:", date(2025, 8, 4))
-    book.producers.add(Producer(ref="P-12", name="Aldys Brothers"))
-    book.producers.add(Producer(ref="P-40", name="Merrick Land Co"))
-    return book
+def stocked() -> Iterator[Book]:
+    with Book.create(":memory:", date(2025, 8, 4)) as book:
+        book.producers.add(Producer(ref="P-12", name="Aldys Brothers"))
+        book.producers.add(Producer(ref="P-40", name="Merrick Land Co"))
+        yield book
 
 
 def test_the_tables_come_off_the_book_rather_than_a_list(stocked: Book) -> None:

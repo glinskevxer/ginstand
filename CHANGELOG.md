@@ -28,10 +28,13 @@ that stop them going stale.
   schema and glossary, and a design note whose named code is checked.
 - The arithmetic laws written down as code and run over a spread of inputs.
 
-Two defects fixed that were found by the checks rather than by the tests: the
-colour chart was sitting a layer above the records that read it, and every
-`with connect(...)` was leaking a connection because a sqlite connection is a
-context manager for its transaction and not for itself.
+Three defects fixed that the tests did not find. The colour chart was sitting a
+layer above the records that read it, which the layer check found. Every
+`with connect(...)` was leaking a connection, because a sqlite connection is a
+context manager for its transaction and not for itself. And five fixtures opened
+a book and never closed it. The last two were found by running the suite on
+Python 3.13, where an unclosed connection warns and 3.12 says nothing, and both
+now have a check behind them.
 
 ## 0.1.0
 

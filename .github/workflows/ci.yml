@@ -44,6 +44,7 @@ jobs:
       - run: python -m ginstand.tools.check_naming
       - run: python -m ginstand.tools.check_design
       - run: python -m ginstand.tools.check_workflow
+      - run: python -m ginstand.tools.check_fixtures
 
   tests:
     runs-on: ubuntu-latest

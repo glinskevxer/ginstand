@@ -54,11 +54,10 @@ def test_a_write_block_rolls_back_as_one(tmp_path: Path) -> None:
             writing.producers.add(Producer(ref="P-12", name="Aldys Brothers"))
             writing.producers.add(Producer(ref="P-12", name="Again"))
 
-    book = Book.create(tmp_path / "book.sqlite3", DAY)
-    with pytest.raises(DuplicateError):
-        add_the_same_producer_twice(book)
-    assert book.producers.list_all() == ()
-    book.close()
+    with Book.create(tmp_path / "book.sqlite3", DAY) as book:
+        with pytest.raises(DuplicateError):
+            add_the_same_producer_twice(book)
+        assert book.producers.list_all() == ()
 
 
 def test_an_unmigrated_book_is_refused_by_open(tmp_path: Path) -> None:

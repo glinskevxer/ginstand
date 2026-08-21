@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterator
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -26,7 +27,7 @@ DAY = date(2025, 8, 4)
 
 
 @pytest.fixture
-def stocked() -> Book:
+def stocked() -> Iterator[Book]:
     book = Book.create(":memory:", DAY)
     book.producers.add(Producer(ref="P-12", name="Aldys Brothers"))
     book.leases.add(Lease(ref="L-1", tenant="P-12", kind=LeaseKind.OWNER))
@@ -35,7 +36,10 @@ def stocked() -> Book:
         Field(ref="FL-9", farm="F-3", name="North 80", acres=Decimal("78.40"), lease="L-1")
     )
     book.runs.add(GinRun(ref="GR-1", crop_year=2025, gin_code="41207", opened=date(2025, 10, 14)))
-    return book
+    try:
+        yield book
+    finally:
+        book.close()
 
 
 def test_the_order_puts_a_run_before_the_bales_that_point_at_it() -> None:
